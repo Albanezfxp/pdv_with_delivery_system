@@ -1,0 +1,135 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+#tables-page-container {
+  background-color: #F5F5F5; /* Fundo claro */
+  color: #2C2C2C;            /* Texto escuro */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.tables-main {
+  margin-left: 280px;
+  padding: 2rem;
+}
+.tables-title h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #E6B800; /* Amarelo ouro suave */
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  position: relative;
+}
+
+.tables-title h1::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 60px;
+  height: 3px;
+  background-color: #E6B800;
+  border-radius: 2px;
+}
+
+
+hr {
+  border: none;
+  height: 2px;
+  background-color: #DADADA; /* Cinza suave */
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.tables-flex {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.table-item {
+  cursor: pointer;
+  background-color: #FFFFFF; /* Branco puro */
+  border: 1px solid #E0E0E0; /* Borda sutil */
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 500;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 300px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.table-item:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.table-item p {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.status {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.table-item.available {
+  background-color: #4CAF50; /* Verde suave */
+  color: #fff;
+}
+
+.status.busy {
+  background-color: #E53935; /* Vermelho vibrante */
+  color: #fff;
+}
+
+.table-item.occupied {
+  background-color: #E53935;
+  opacity: 0.85;
+  color: #E0E0E0;
+}
+
+/* ➕ Card de adicionar */
+.table-item.add {
+  background: linear-gradient(145deg, #fafafa, #ffffff);
+  border: 2px dashed #cccccc;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.table-item.add:hover {
+  border-color: #999;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.table-item.add > p {
+  font-size: 26px;
+  font-weight: 600;
+}
+
+/* --- Animação suave no hover da badge --- */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+
+.table-item:hover .status {
+  animation: pulse 0.6s ease-in-out;
+}
