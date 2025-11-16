@@ -1,668 +1,555 @@
-/* ---------- Container principal (Layout de 2 colunas) ---------- */
+/* =========================
+   RESET CONTROLADO
+========================= */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #f4f6f8;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================
+   VARIÁVEIS
+========================= */
+:root {
+  --primary: #f7a61d;
+  --secondary: #2563eb;
+  --danger: #e53935;
+  --success: #43a047;
+
+  --bg-white: #ffffff;
+  --bg-light: #f9fafb;
+
+  --text-dark: #1f2933;
+  --text-muted: #6b7280;
+
+  --border: #e5e7eb;
+
+  --radius: 10px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.loading-details-table-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  width: 70%;
+  max-height: 90vh;
+  background-color: var(--bg-light);
+}
+
+/* =========================
+   CONTAINER PRINCIPAL
+========================= */
 #details-table-container {
-    background-color: #f9f9f9;
-    color: #2c2c2c;
-    min-height: 100vh;
-    padding: 2rem;
-    font-family: "Poppins", sans-serif;
-    display: flex;
-    gap: 2rem;
-    transition: all 0.3s ease;
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  min-height: 100vh;
+  padding: 2rem;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  gap: 2rem;
+  transition: all 0.3s ease;
 }
 
-/* ---------- Painel da mesa (esquerda) ---------- */
-.table-panel {
-    width: 350px;
-    background-color: #fff;
-    border-radius: 12px;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    height: 100vh;
-}
-
-.table-panel h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #2c2c2c;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.itens-order-container {
-    background: linear-gradient(180deg, #ffffff, #f7f7f7);
-    border-radius: 18px;
-    padding: 18px;
-    width: 100%;
-    height: 45vh;
-    overflow-y: auto;
-    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.08);
-    scroll-behavior: smooth;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* Estilo individual dos cards de itens do pedido */
-.order-item-detail {
-    position: relative;
-    background: #fff;
-    border-radius: 14px;
-    padding: 16px 18px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    transition: all 0.3s ease;
-    border: 1px solid transparent;
-}
-
-.order-item-detail:hover {
-    transform: translateY(-3px);
-    border-color: #e6b800;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-}
-
-/* Botão de remover (canto superior direito do card) */
-.remove-item-button {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background-color: #ffebee;
-    border: none;
-    border-radius: 50%;
-    color: #e53935;
-    width: 28px;
-    height: 28px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.25s ease;
-}
-
-.remove-item-button:hover {
-    background-color: #e53935;
-    color: #fff;
-    transform: rotate(90deg) scale(1.15);
-}
-
-/* Conteúdo textual do card */
-.item-info {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.title-product-in-card {
-    font-size: 15px;
-    font-weight: 600;
-    color: #2c2c2c;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.item-flavors {
-    font-size: 13px;
-    color: #666;
-    margin-top: 3px;
-}
-
-.item-price {
-    font-weight: 700;
-    color: #333;
-    margin-top: 5px;
-}
-
-/* Barra de rolagem customizada */
-.itens-order-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-.itens-order-container::-webkit-scrollbar-track {
-    background: #f0f0f0;
-    border-radius: 10px;
-}
-
-.itens-order-container::-webkit-scrollbar-thumb {
-    background: #d1a500;
-    border-radius: 10px;
-}
-
-.itens-order-container::-webkit-scrollbar-thumb:hover {
-    background: #b88e00;
-}
-
-/* Resumo financeiro */
-.table-panel .summary p {
-    margin: 0.5rem 0;
-    font-weight: 600;
-    font-size: 14px;
-    display: flex;
-    justify-content: space-between;
-}
-
-.table-panel .summary .highlight {
-    color: #4caf50;
-    font-weight: 600;
-}
-
-
-/* Botões de ação */
-.table-panel .action-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 5px;
-}
-
-.table-panel .action-buttons button {
-    flex: 1;
-    padding: 12px 0;
-    border-radius: 10px;
-    border: none;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: #fff;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.table-panel .action-buttons button.print { background-color: #42a5f5; }
-.table-panel .action-buttons button.delete { background-color: #ef5350; }
-.table-panel .action-buttons button.cash { background-color: #ffb74d; color: #fff; }
-.table-panel .action-buttons button.discount { background-color: #66bb6a; }
-
-.add_pay {
-    background-color: #42a5f5;
-    border: transparent;
-    border-radius: 15px;
-    color: #fff;
-    font-weight: bold;
-    font-size: 15px;
-    padding: 15px;
-    width: 100%;
-    height: 60px;
-    margin-top: 10px;
-}
-
-/* ---------- Seção de produtos (direita) ---------- */
+/* =========================
+   SEÇÃO DE PRODUTOS
+========================= */
 .products-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-/* Categorias */
+/* =========================
+   CATEGORIAS (STYLE CHIPS)
+========================= */
 .categories {
-    display: flex;
-    gap: 1rem;
-    overflow-x: auto;
-    padding-bottom: 0.5rem;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px 0 0px 0;
+  scrollbar-width: none;
 }
+
+.categories::-webkit-scrollbar { display: none; }
 
 .category-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 0.85rem;
-    cursor: pointer;
-    text-align: center;
-    flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
+
+.category-item.active {
+  background-color: var(--secondary) !important;
+  border-color: var(--secondary) !important;
+  color: #fff !important;
+}
+
+.category-item.active span { color: #fff; }
 
 .category-item img {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 2px solid #e0e0e0;
-    margin-bottom: 0.3rem;
-    transition: all 0.3s ease;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-.category-item:hover img {
-    border-color: #e6b800;
-    transform: scale(1.05);
+/* =========================
+   ESTADO VAZIO (EMPTY STATE)
+========================= */
+.products-grid-container {
+  flex: 1;
+  display: flex;
 }
 
-/* Grid de Produtos */
+.empty-category-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border: 2px dashed #e2e8f0;
+  border-radius: 20px;
+  margin: 10px 0;
+}
+
+.empty-state-content {
+  text-align: center;
+  color: #64748b;
+}
+
+.icon-pulse {
+  color: var(--secondary);
+  margin-bottom: 15px;
+  animation: bounceUp 2s infinite ease-in-out;
+}
+
+@keyframes bounceUp {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* =========================
+   GRID E CARDS
+========================= */
 .products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  width: 100%;
 }
 
 .product-card {
-    background-color: #fff;
-    border-radius: 12px;
-    padding: 1rem;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: transform 0.2s;
 }
 
 .product-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  border-color: var(--secondary);
 }
 
 .product-card img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 10px;
-    margin-bottom: 0.5rem;
-    object-fit: cover;
+  width: 100%;
+  height: 110px;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
-.product-card h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0.3rem 0;
-    color: #2c2c2c;
-    min-height: 2.5em;
+.product-card h3 { font-size: 0.9rem; margin: 8px 0 4px; }
+.product-card .price { color: var(--secondary); font-weight: 700; }
+/* =========================
+   PAINEL DA MESA
+========================= */
+.table-panel {
+  width: 360px;
+  background-color: var(--bg-white);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
 }
 
-.product-card span {
-    font-weight: bold;
-    color: #555;
+.close-header-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: none;
 }
 
-/* ---------- Modais (Estilos Genéricos) ---------- */
-.modal-Edit-Table-Name-Container,
-.modal-flavor-Container,
-.modal-Pay-Table-Container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.7); /* Fundo mais escuro */
-    backdrop-filter: blur(8px); /* Blur mais forte */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+.edit-name-table-pen.open {
+  display: block;
 }
 
-/* Estilos Comuns de Conteúdo de Modal */
-#container-edit-modal, 
-#container-pay-modal {
-    background-color: #fff;
-    padding: 2.5rem;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); /* Sombra mais forte */
-    max-width: 480px; /* Pouco mais largo para pagamentos */
-    width: 90%;
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-    position: relative;
-    animation: scaleIn 0.3s ease-in-out;
+.edit-name-table-pen {
+  display: none;
 }
 
-#container-edit-modal h3,
-#container-pay-modal h3 {
-    font-size: 1.6rem;
-    color: #2c2c2c;
-    text-align: center;
-    margin-bottom: 0.5rem;
-    font-weight: 700;
+.close-header-button.on{
+display: block;
 }
 
-.close-modal-button {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: transparent;
-    border: none;
-    font-size: 1.6rem;
-    cursor: pointer;
-    color: #888;
-    transition: color 0.2s ease;
+.table-panel h2 {
+  font-size: 1.2rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.close-modal-button:hover {
-    color: #e53935;
+/* =========================
+   ITENS DO PEDIDO
+========================= */
+.itens-order-container {
+  background-color: var(--bg-light);
+  padding: 10px;
+  border-radius: var(--radius);
+  max-height: 40vh;
+  overflow-y: auto;
 }
 
-/* ---------- Estilos Específicos do Modal de Pagamento (MODERNO) ---------- */
-#container-pay-modal form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+.order-item-detail {
+  background-color: var(--bg-white);
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
-#container-pay-modal h4 {
-    margin: 0.5rem 0;
-    font-size: 1.1rem;
-    color: #444;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
+.remove-item-button {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
 }
 
-.payment-summary {
-    padding: 10px 0;
-    background-color: #f0f8ff; /* Fundo suave */
-    border-radius: 8px;
-    border: 1px solid #e0f2ff;
+.item-info {
+  flex: 1;
 }
 
-.payment-summary p {
-    font-size: 1.1rem;
-    font-weight: 500;
-    padding: 5px 15px;
-    display: flex;
-    justify-content: space-between;
+.title-product-in-card {
+  display: flex;
+  gap: 6px;
+  font-size: 0.85rem;
 }
 
-.payment-summary hr {
-    margin: 8px 15px;
-    border: none;
-    border-top: 1px dashed #ddd;
+.item-flavors {
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
-.payment-summary .highlight-price {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: #2e7d32; /* Verde escuro para preço final */
+.item-price {
+  font-weight: bold;
+  color: var(--secondary);
 }
 
-/* Lista Dinâmica de Entradas de Pagamento */
-.payment-entries-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: 200px;
-    overflow-y: auto;
-    padding-right: 5px;
+/* =========================
+   RESUMO
+========================= */
+.summary p {
+  font-size: 0.9rem;
+  color: var(--text-dark);
 }
 
-.payment-entry-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+/* =========================
+   BOTÕES DE AÇÃO
+========================= */
+.action-buttons.open {
+  display: flex;
+  justify-content: space-evenly;
 }
 
-.payment-entry-row select,
-.payment-entry-row input[type="number"] {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: border-color 0.2s;
-    flex: 1; /* Ocupa espaço igual */
+.action-buttons {
+  display: none;
 }
 
-.payment-entry-row input[type="number"] {
-    flex: 1.5; /* Prioriza um pouco o campo de valor */
-    text-align: right;
+.action-buttons button {
+  background-color: var(--bg-light);
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.payment-entry-row select:focus,
-.payment-entry-row input[type="number"]:focus {
-    border-color: #42a5f5;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.3);
-}
-
-.remove-payment-entry-btn {
-    background-color: #e57373; /* Cor vermelha suave */
-    color: white;
-    border: none;
-    border-radius: 6px;
-    width: 35px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.remove-payment-entry-btn:hover {
-    background-color: #ef5350;
-}
-
-.add-payment-entry-btn {
-    background-color: #66bb6a; /* Cor verde para adicionar */
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
-
-.add-payment-entry-btn:hover {
-    background-color: #4caf50;
-}
-
-.confirm-pay-button {
-    margin-top: 1.5rem;
-    background-color: #e6b800;
-}
-
-.confirm-pay-button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* ---------- Modal de Edição de Nome (Estilos específicos) ---------- */
-#container-edit-modal input[type="text"] {
-    padding: 0.9rem 1rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 1rem;
-    color: #444;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-#container-edit-modal input[type="text"]:focus {
-    border-color: #e6b800;
-    box-shadow: 0 0 0 3px rgba(230, 184, 0, 0.2);
-}
-
-
-/* ---------- Modal de Sabores (Estilos específicos) ---------- */
-.modal-flavor-Container {
-    z-index: 999;
-}
-
-#container-flavor-modal {
-    background-color: #fff;
-    border-radius: 16px;
-    padding: 2rem;
-    width: 50%;
-    height: 90vh;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
-    position: relative;
-    animation: scaleIn 0.3s ease-in-out;
-    overflow-y: auto;
-}
-
-#container-flavor-modal h3 {
-    text-align: center;
-    font-size: 1.6rem;
-    margin-bottom: 0.5rem;
-    color: #333;
-}
-
-.p-title-modal-flavor {
-    text-align: center;
-    margin-bottom: 1rem;
-    color: #555;
-    font-size: 0.95rem;
-}
-
-.title-modal-type {
-    margin-top: 18px;
-    font-weight: 600;
-    color: #333;
-}
-
-.flavors-grid {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: start;
-    gap: 5px;
-}
-
-.flavor-card {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background-color: #fef9f0;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    padding: 0.8rem;
-    cursor: pointer;
-    width: 100%;
-    transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
-}
-
-.flavor-card > div {
-    align-items: center;
-    display: flex;
-    gap: 5px;
-}
-
-.flavor-card:hover {
-    transform: scale(1.02);
-    background-color: #fff8e0;
-}
-
-.flavor-card input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-}
-
-.flavor-card span {
-    font-weight: bold;
-    color: #333;
-}
-
-.flavor-card input:checked + span {
-    color: #e6b800;
-    border-color: #e6b800;
-}
-
-.save-flavor-button {
-    margin-top: 20px;
-    width: 100%;
-    padding: 0.8rem;
-    background-color: #e6b800;
-    color: #fff;
-    font-weight: bold;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.save-flavor-button:hover {
-    background-color: #cc9c00;
+.action-buttons button:hover {
+  background-color: #e5e7eb;
 }
 
 .iconsAdctionButtons {
-    width: 20px;
+  width: 22px;
+  height: 22px;
 }
 
-/* ---------- Animações ---------- */
+.add_pay {
+  margin-top: 10px;
+  padding: 12px;
+  background-color: var(--secondary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: filter 0.2s ease, transform 0.15s ease;
+}
+
+.add_pay:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* =========================
+   MODAIS – BASE + OVERLAY
+========================= */
+.modal-overlay,
+.modal-flavor-Container,
+.modal-Pay-Table-Container,
+.modal-percent-Container,
+.modal-Edit-Table-Name-Container {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.25s ease forwards;
+  
+}
+
+.modal-flavor-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 9999;
+  height: 100vh;
+}
+
+.modal-flavor-Container {
+  position: relative;
+  z-index: 10000;
+  height: 100vh;
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* =========================
+   CONTAINERS DOS MODAIS
+========================= */
+.modal-container,
+#container-flavor-modal,
+#container-pay-modal,
+#container-percent-modal,
+#container-edit-modal {
+  background-color: var(--bg-white);
+  padding: 20px;
+  border-radius: var(--radius);
+  width: 500;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  animation: scaleIn 0.25s ease forwards;
+}
+
 @keyframes scaleIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
-/* ---------- Responsividade ---------- */
-@media (max-width: 1024px) {
-    #details-table-container {
-        flex-direction: column;
-        margin-left: 0;
-    }
-
-    .table-panel {
-        width: 100%;
-    }
-
-    .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    }
-
-    #container-flavor-modal {
-        width: 80%;
-    }
+/* =========================
+   CABEÇALHO DOS MODAIS
+========================= */
+.modal-container h2,
+#container-flavor-modal h2,
+#container-pay-modal h2,
+#container-percent-modal h2,
+#container-edit-modal h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.2rem;
+  color: var(--text-dark);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
 }
 
-@media (max-width: 480px) {
-    .categories {
-        gap: 0.5rem;
-    }
+/* Botão fechar */
+.close-modal-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  float: right;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
 
-    .category-item img {
-        width: 50px;
-        height: 50px;
-    }
+.close-modal-button:hover {
+  color: var(--danger);
+}
 
-    .product-card {
-        padding: 0.8rem;
-    }
+/* =========================
+   SCROLL INTERNO DOS MODAIS
+========================= */
+.modal-container::-webkit-scrollbar,
+#container-flavor-modal::-webkit-scrollbar,
+#container-pay-modal::-webkit-scrollbar {
+  width: 6px;
+}
 
-    .product-card h3 {
-        font-size: 0.9rem;
-    }
+.modal-container::-webkit-scrollbar-thumb,
+#container-flavor-modal::-webkit-scrollbar-thumb,
+#container-pay-modal::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 6px;
+}
 
-    #container-edit-modal {
-        width: 90%;
-        padding: 1.5rem;
-    }
+/* =========================
+   MODAL SABORES
+========================= */
+.flavors-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-    #container-flavor-modal {
-        width: 90%;
-    }
-    
-    #container-pay-modal {
-        max-width: 90%;
-        padding: 1.5rem;
-    }
+.flavor-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 0.8rem;
+  background-color: var(--bg-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-    /* Ajuste responsivo para a linha de pagamento */
-    .payment-entry-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .payment-entry-row select,
-    .payment-entry-row input[type="number"],
-    .remove-payment-entry-btn {
-        width: 100%;
-    }
-    .remove-payment-entry-btn {
-        margin-top: 5px;
-    }
+}
+
+.flavor-card:hover {
+  border-color: var(--secondary);
+  background-color: #eef2ff;
+}
+
+.md-flavor-name {
+  color: #090b0e;
+  font-weight: 500;
+  padding: 0px 0px 5px 5px;
+  font-size: 15px;
+}
+
+
+/* =========================
+   MODAL PAGAMENTO
+========================= */
+.payment-entry-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  background-color: var(--bg-light);
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.payment-entry-row input,
+.payment-entry-row select {
+  flex: 1;
+}
+
+.add-payment-entry-btn {
+  margin-top: 10px;
+  padding: 8px;
+  background-color: var(--bg-light);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-payment-entry-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.confirm-pay-button {
+  margin-top: 14px;
+  background-color: var(--success);
+  color: white;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: filter 0.2s ease, transform 0.15s ease;
+}
+
+.confirm-pay-button:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* =========================
+   INPUTS
+========================= */
+input,
+select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+/* =========================
+   BOTÕES PRINCIPAIS DO MODAL
+========================= */
+.save-flavor-button {
+  margin-top: 12px;
+  padding: 10px;
+  background-color: var(--secondary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: filter 0.2s ease, transform 0.15s ease;
+  width: 500px ;
+}
+
+.save-flavor-button:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
 }

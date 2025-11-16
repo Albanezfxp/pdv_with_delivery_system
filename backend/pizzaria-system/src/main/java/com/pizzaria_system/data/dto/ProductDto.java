@@ -1,5 +1,6 @@
 package com.pizzaria_system.data.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.pizzaria_system.model.Category;
 import com.pizzaria_system.model.ProductVariation;
 import jakarta.persistence.*;
@@ -14,9 +15,11 @@ public class ProductDto extends RepresentationModel<ProductDto> {
     private String name;
     private String description;
     private Boolean active;
-    private Category category;
+    @JsonIgnoreProperties("products")
+    private CategoryDto category;
     private String imageUrl;
-    private List<ProductVariationDto> variations;
+    @JsonIgnoreProperties("product")
+    private List<ProductCreateVariationDto> variations;
 
     public Long getId() {
         return id;
@@ -50,11 +53,11 @@ public class ProductDto extends RepresentationModel<ProductDto> {
         this.active = active;
     }
 
-    public Category getCategory() {
+    public CategoryDto getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(CategoryDto category) {
         this.category = category;
     }
 
@@ -66,11 +69,11 @@ public class ProductDto extends RepresentationModel<ProductDto> {
         this.imageUrl = imageUrl;
     }
 
-    public List<ProductVariationDto> getVariations() {
+    public List<ProductCreateVariationDto> getVariations() {
         return variations;
     }
 
-    public void setVariations(List<ProductVariationDto> variations) {
+    public void setVariations(List<ProductCreateVariationDto> variations) {
         this.variations = variations;
     }
 

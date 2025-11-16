@@ -1,3 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --amarelo: #e6b800;
+  --amarelo-hover: #d4a200;
+  --bg-fundo: #f4f5f7;
+  --branco: #ffffff;
+  --texto-escuro: #1a1a1a;
+  --texto-suave: #64748b;
+  --borda: #e2e8f0;
+  --sucesso: #10b981;
+  --erro: #ef4444;
+  --radius: 16px;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -6,130 +22,192 @@
 }
 
 #tables-page-container {
-  background-color: #F5F5F5; /* Fundo claro */
-  color: #2C2C2C;            /* Texto escuro */
+  /* Remova estas linhas: */
+  /* display: flex; */
+  /* flex-direction: column; */
+  
+  background-color: var(--bg-fundo);
+  color: var(--texto-escuro);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
-.tables-main {
-  margin-left: 280px;
-  padding: 2rem;
+
+/* ---------- Título Estilizado ---------- */
+.tables-title {
+  margin-bottom: 2.5rem;
 }
+
 .tables-title h1 {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  color: #E6B800; /* Amarelo ouro suave */
-  margin-bottom: 0.5rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  color: var(--texto-escuro);
+  letter-spacing: -0.5px;
   position: relative;
+  display: inline-block;
 }
 
 .tables-title h1::after {
   content: "";
   position: absolute;
   left: 0;
-  bottom: -8px;
-  width: 60px;
-  height: 3px;
-  background-color: #E6B800;
-  border-radius: 2px;
+  bottom: -5px;
+  width: 40px;
+  height: 4px;
+  background-color: var(--amarelo);
+  border-radius: 10px;
 }
-
 
 hr {
   border: none;
-  height: 2px;
-  background-color: #DADADA; /* Cinza suave */
-  width: 100%;
-  margin-bottom: 2rem;
+  height: 1px;
+  background-color: var(--borda);
+  margin: 1.5rem 0 2.5rem 0;
 }
 
+/* ---------- Grid de Mesas ---------- */
 .tables-flex {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  align-items: stretch;
 }
 
+/* ---------- Card Base da Mesa ---------- */
 .table-item {
   cursor: pointer;
-  background-color: #FFFFFF; /* Branco puro */
-  border: 1px solid #E0E0E0; /* Borda sutil */
-  padding: 1.5rem;
-  border-radius: 12px;
+  background-color: var(--branco);
+  border: 1px solid var(--borda);
+  padding: 2rem;
+  border-radius: var(--radius);
   text-align: center;
-  font-weight: 500;
-  transition: transform 0.2s, box-shadow 0.2s;
-  width: 300px;
-  height: 150px;
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 180px;
 }
 
 .table-item:hover {
-  transform: scale(1.03);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
 }
 
 .table-item p {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-}
-
-.status {
-  font-size: 0.9rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 20px;
+  color: var(--texto-escuro);
+  margin-bottom: 0.75rem;
+  z-index: 2;
 }
 
+/* ---------- Status Badges ---------- */
+.status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+/* Estado: Disponível (Verde) */
 .table-item.available {
-  background-color: #4CAF50; /* Verde suave */
-  color: #fff;
+  border-top: 6px solid var(--sucesso);
 }
 
-.status.busy {
-  background-color: #E53935; /* Vermelho vibrante */
-  color: #fff;
+.table-item.available .status {
+  background-color: #ecfdf5;
+  color: var(--sucesso);
 }
 
+/* Estado: Ocupada (Vermelho) */
 .table-item.occupied {
-  background-color: #E53935;
-  opacity: 0.85;
-  color: #E0E0E0;
+  border-top: 6px solid var(--erro);
+  background-color: #fffafa;
 }
 
-/* ➕ Card de adicionar */
+.table-item.occupied .status.busy {
+  background-color: #fef2f2;
+  color: var(--erro);
+}
+
+/* ---------- Card Adicionar Mesa ---------- */
 .table-item.add {
-  background: linear-gradient(145deg, #fafafa, #ffffff);
-  border: 2px dashed #cccccc;
-  color: #666;
-  transition: all 0.3s ease;
+  background-color: transparent;
+  border: 2px dashed #cbd5e1;
+  box-shadow: none;
+  color: var(--texto-suave);
 }
 
 .table-item.add:hover {
-  border-color: #999;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border-color: #002c8b;
+  background-color: var(--branco);
+  color: #002c8b;
 }
 
 .table-item.add > p {
-  font-size: 26px;
-  font-weight: 600;
+  font-size: 3rem;
+  margin-bottom: 0;
+  color: inherit;
+  font-weight: 300;
 }
 
-/* --- Animação suave no hover da badge --- */
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.07); }
-  100% { transform: scale(1); }
+.table-item.add span {
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
-.table-item:hover .status {
-  animation: pulse 0.6s ease-in-out;
+/* ---------- Indicador Visual de Mesa Ocupada ---------- */
+.table-item.occupied::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--erro);
+    border-radius: 50%;
+}
+
+/* ---------- Animação ---------- */
+@keyframes softPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.table-item.occupied:hover .status {
+  animation: softPulse 1.5s infinite ease-in-out;
+}
+
+
+
+@media (max-width: 1024px) {
+  .tables-main {
+    margin-left: 0;
+    padding: 1.5rem;
+  }
+}
+
+/* ---------- Responsividade ---------- */
+@media (max-width: 1024px) {
+  .tables-main {
+    margin-left: 0;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tables-flex {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-item {
+    min-height: 140px;
+  }
 }

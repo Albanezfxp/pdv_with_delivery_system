@@ -35,6 +35,7 @@ public class ProductVariationDto extends RepresentationModel<ProductVariationDto
             inverseJoinColumns = @JoinColumn(name = "complement_id")
     )
     private List<Complement> complements;
+    private Integer numberOfFlavor;
 
     public Long getId() {
         return id;
@@ -90,6 +91,14 @@ public class ProductVariationDto extends RepresentationModel<ProductVariationDto
 
     public void setComplements(List<Complement> complements) {
         this.complements = complements;
+    }
+
+    public Integer getNumberOfFlavor() {
+        return numberOfFlavor;
+    }
+
+    public void setNumberOfFlavor(Integer numberOfFlavor) {
+        this.numberOfFlavor = numberOfFlavor;
     }
 
     @Override

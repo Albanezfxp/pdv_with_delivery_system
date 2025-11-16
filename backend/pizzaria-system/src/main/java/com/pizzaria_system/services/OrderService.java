@@ -1,19 +1,27 @@
 package com.pizzaria_system.services;
 
-import com.pizzaria_system.data.dto.OrderItemDto;
-import com.pizzaria_system.data.dto.OrderItemRequest;
+import com.pizzaria_system.data.dto.*;
 import com.pizzaria_system.data.enums.OrderStatus;
+import com.pizzaria_system.data.enums.Order_Type;
+import com.pizzaria_system.data.enums.PaymentMethod;
+import com.pizzaria_system.data.enums.TableStatus;
 import com.pizzaria_system.exception.ResourceNotFoundException;
+import com.pizzaria_system.mapper.ObjectMapper;
 import com.pizzaria_system.model.*;
 import com.pizzaria_system.repository.*;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class OrderService {
@@ -24,6 +32,7 @@ public class OrderService {
     private final ComplementRepository complementRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderEntityRepository orderRepository;
+    private final OrderEntityRepository orderEntityRepository;
 
     public OrderService(
             TableEntityRepository tableRepository,
@@ -31,13 +40,21 @@ public class OrderService {
             FlavorRepository flavorRepository,
             ComplementRepository complementRepository,
             OrderItemRepository orderItemRepository,
-            OrderEntityRepository orderRepository) {
+            OrderEntityRepository orderRepository, OrderEntityRepository odersRepository) {
         this.tableRepository = tableRepository;
         this.variationRepository = variationRepository;
         this.flavorRepository = flavorRepository;
         this.complementRepository = complementRepository;
         this.orderItemRepository = orderItemRepository;
         this.orderRepository = orderRepository;
+        this.orderEntityRepository = odersRepository;
+    }
+    @Autowired
+    ClienteRepository clienteRepository;
+
+    public Stream<OrderEntity> findAllOrdersForDelivery() {
+        List<OrderEntity> orders = orderEntityRepository.findAll();
+        return orders.stream().filter(o -> o.getType() == Order_Type.DELIVERY);
     }
 
     // --- Lógica de Busca de Itens por FK (GET /order/itens-table/{id}) ---
@@ -84,12 +101,58 @@ public class OrderService {
         return dto;
     }
 
-    public void removeItemToTable(Long productId) {
-        var deleteProduct = orderItemRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        orderItemRepository.delete(deleteProduct);
+    public ResponseEntity<OrderEntity> createOrderInDelivery(OrderDeliveryDto request) {
+        Cliente newCliente = new Cliente();
+        newCliente.setName(request.getCliente_name());
+        newCliente.setBirthday(request.getCliente_birthday());
+        newCliente.setEndereco(request.getCliente_endereco());
+        newCliente.setEmail(request.getCliente_email());
+        newCliente.setPhone(request.getCliente_phone());
+
+        Cliente savedCliente = clienteRepository.save(newCliente);
+
+        OrderEntity newOrder = new OrderEntity();
+        newOrder.setType(Order_Type.DELIVERY);
+        newOrder.setSubtotal(request.getSubtotal());
+        newOrder.setStatus(OrderStatus.PREPARING);
+        newOrder.setDiscount(request.getDiscount());
+        newOrder.setAddition(request.getAddition());
+        newOrder.setTotal(request.getTotal());
+        newOrder.setItems(request.getItems());
+        newOrder.setPayments(request.getPaymentMethods());
+        newOrder.setClient(savedCliente); // Vincula o cliente já salvo
+
+        OrderEntity savedOrder = orderEntityRepository.save(newOrder);
+
+        // 3. Retorno com Status 201 e o objeto criado no corpo
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
     }
 
-    // --- Lógica de Adicionar Item ao Pedido (POST /order/add-item/{tableId}) ---
+    public void removeItemToTable(Long productId) {
+        var deleteProduct = orderItemRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Item de pedido não encontrado"));
+
+        // 1. Recupera a Mesa e o Pedido associados
+        TableEntity table = deleteProduct.getOrder().getTable();
+        OrderEntity order = deleteProduct.getOrder();
+
+        // 2. Deleta o item do pedido
+        orderItemRepository.delete(deleteProduct);
+
+        // 3. Verifica se a lista de itens do pedido está vazia AGORA
+        //    É necessário verificar no banco de dados ou em um objeto atualizado.
+        //    Se Order for 'LAZY', uma nova chamada a getItems() pode funcionar,
+        //    mas é mais seguro usar um COUNT ou RECARREGAR.
+
+        // *Melhor forma: Usar um count no repository:*
+        if (orderItemRepository.countByOrderId(order.getId()) == 0) {
+            table.setStatus(TableStatus.FREE);
+            // Salva a alteração de status da mesa
+            tableRepository.save(table);
+            // Obs: Se o pedido (Order) também for finalizado/removido, faça isso aqui.
+        }
+    }
+
 
     @Transactional
     public OrderItemDto addItemToTableOrder(Long tableId, OrderItemRequest request) {
@@ -97,6 +160,7 @@ public class OrderService {
         // Busca mesa e pedido associado
         TableEntity table = tableRepository.findByIdWithOrderAndItems(tableId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com ID: " + tableId));
+         table.setStatus(TableStatus.OCCUPIED);
 
         OrderEntity order = table.getOrder();
         if (order == null) {
@@ -105,8 +169,14 @@ public class OrderService {
             order.setStatus(OrderStatus.OPEN);
             order.setTable(table);
             table.setOrder(order);
-            order = orderRepository.save(order);
+            order.setType(request.getType());
         }
+
+        if (order.getType() == null) {
+            order.setType(request.getType());
+        }
+
+        order = orderRepository.save(order);
 
         // Busca variação e relacionamentos
         ProductVariation variation = variationRepository.findById(request.getProductVariationId())
@@ -153,10 +223,8 @@ public class OrderService {
         if (order.getItems() == null) order.setItems(new ArrayList<>());
         order.getItems().add(savedItem);
 
-        // Atualiza mesa
         tableRepository.save(table);
 
-        // Monta DTO de retorno (Corrigido para garantir o size)
         OrderItemDto dto = new OrderItemDto();
         dto.setId(savedItem.getId());
         dto.setName(savedItem.getProductVariation().getProduct().getName());
@@ -172,4 +240,68 @@ public class OrderService {
         return dto;
     }
 
+    @Transactional
+    public OrderPayRequestDto closeToTable(Long tableId, OrderPayRequestDto request) {
+
+        // 1. Lógica de Mesa e Pedido
+        TableEntity table = tableRepository.findById(tableId)
+                .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com ID: " + tableId));
+
+        // ⚠️ MELHORIA: Verifique se há um pedido ativo antes de continuar
+        OrderEntity order = table.getOrder();
+        if (order == null) {
+            throw new ResourceNotFoundException("Não há pedido ativo para a Mesa ID: " + tableId);
+        }
+
+        // 2. Aplica Pagamento e Salva Pedido
+        order.setPayments(request.getPaymentEntries());
+        order.setAddition(request.getAddition());
+        order.setDiscount(request.getDiscount());
+        order.setTotal(request.getTotal());
+        order.setStatus(OrderStatus.PAYED);
+        order.setSubtotal(request.getSubtotal());
+        // Remove os itens do pedido ao finalizar pagamento para que a
+        // consulta de itens retorne vazia (orphanRemoval remove os filhos)
+        if (order.getItems() != null && !order.getItems().isEmpty()) {
+            order.getItems().clear();
+        }
+
+        // Desvincula a mesa e salva o pedido sem itens
+        order.setTable(null);
+        orderEntityRepository.save(order);
+
+        table.setOrder(null); // Desvincula
+        if (table.getStatus() == TableStatus.OCCUPIED) {
+            table.setStatus(TableStatus.FREE);
+        }
+        tableRepository.save(table);
+
+        return request;
+    }
+
+    public List<OrderEntityDto> getAllOrdersWithPayments() {
+        List<OrderEntity> orders = orderEntityRepository.findAllWithPayments();
+
+        // 🔹 CONVERSÃO MANUAL se o ObjectMapper não funcionar
+        return orders.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    private OrderEntityDto convertToDto(OrderEntity order) {
+        OrderEntityDto dto = new OrderEntityDto();
+        dto.setId(order.getId());
+        dto.setClient(order.getClient());
+        dto.setUser(order.getUser());
+        dto.setTable(order.getTable());
+        dto.setPaymentMethods(order.getPayments()); // 🔹 GARANTIR que payments está aqui
+        dto.setStatus(order.getStatus());
+        dto.setDiscount(order.getDiscount());
+        dto.setAddition(order.getAddition());
+        dto.setTotal(order.getTotal());
+        dto.setSubtotal(order.getSubtotal());
+        dto.setCreatedAt(order.getCreatedAt());
+
+        return dto;
+    }
 }

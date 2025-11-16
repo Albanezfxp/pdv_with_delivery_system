@@ -6,3 +6,8 @@ export interface Category {
   imageUrl: string;
   products: Product[];
 }
+
+export interface categoryAdd {
+  name: string;
+  imageUrl: string;
+}

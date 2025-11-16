@@ -32,9 +32,30 @@ export default function Header() {
               <li>Histórico</li>
             </Link>
 
-            <li className="nav-item">Delivery</li>
-            <li className="nav-item">Ajustes</li>
-            <li className="nav-item" id="login-button">
+           <Link
+              to="/delivery"
+              className={`nav-item ${isActive("/delivery") ? "active" : ""}`}
+            >
+              <li>Delivery</li>
+            </Link>
+     <Link
+              to="/settings"
+              className={`nav-item ${
+                isActive("/settings") || 
+                isActive("/clientes") || 
+                isActive("/profile") || 
+                isActive("/products") ||
+                isActive("/categories") ||
+                isActive("/acrescimos") ||
+                isActive("/formatPay") ||
+                isActive("/cardQr") ||
+                isActive("/bairros") ||
+                isActive("/cupons") ||
+                isActive("/delivery-cardapio")
+                ?  "active" : ""}`}
+            >
+              <li>Ajustes</li>
+            </Link>            <li className="nav-item" id="login-button">
               Login
             </li>
           </ul>

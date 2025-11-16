@@ -1,0 +1,314 @@
+:root {
+    --dm-primary: #002c8b;
+    --dm-secondary: #f7a61d;
+    --dm-danger: #ef5350;
+    --dm-success: #4caf50;
+    --dm-bg-page: #f9f9f9;
+    --dm-white: #ffffff;
+    --dm-text: #2c2c2c;
+    --dm-border: #e0e0e0;
+    --dm-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    --dm-pending: #EF5350;
+    --dm-preparing:#F7A61D;
+    --dm-on_route:#2196F3;
+}
+
+.dm-main-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    background-color: var(--dm-bg-page);
+}
+
+.dm-dashboard-container {
+    margin-left: 280px; /* Alinhado com seu Header */
+    padding: 2rem;
+    display: flex;
+    flex-direction: row-reverse; /* Sidebar na direita, Conteúdo na esquerda */
+    gap: 2rem;
+    transition: all 0.3s ease;
+    font-family: "Poppins", sans-serif;
+}
+
+/* --- SIDEBAR PANEL --- */
+.dm-sidebar-panel {
+    width: 350px;
+    background-color: var(--dm-white);
+    border-radius: 16px;
+    box-shadow: var(--dm-shadow);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: calc(100vh - 120px);
+    position: sticky;
+    top: 20px;
+}
+
+.dm-sidebar-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    border-bottom: 1px solid var(--dm-border);
+    padding-bottom: 10px;
+    color: var(--dm-text);
+}
+
+.dm-stats-summary {
+    border-top: 1px dashed var(--dm-border);
+    padding-top: 15px;
+}
+
+.dm-stat-line {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+    font-weight: 500;
+}
+
+.dm-stat-bold { color: var(--dm-success); font-weight: 700; }
+.dm-stat-warning { color: var(--dm-primary); font-weight: 700; }
+.dm-stat-info { color: var(--dm-secondary); font-weight: 700; }
+
+.dm-sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.dm-sidebar-actions button {
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.dm-btn-history { background-color: #2196F3; }
+.dm-btn-report { background-color: var(--dm-primary); }
+.dm-btn-add-order{background-color: var(--dm-success);}
+
+/* --- CONTENT SECTION --- */
+.dm-content-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.dm-filter-tabs {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 5px;
+}
+
+.dm-tab-item {
+    padding: 10px 20px;
+    background: var(--dm-white);
+    border-radius: 30px;
+    box-shadow: var(--dm-shadow);
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: 0.3s;
+}
+
+.dm-tab-item.dm-active, .dm-tab-item:hover {
+    background: var(--dm-primary);
+    color: white;
+}
+/* 1. Criamos um wrapper para o botão com largura fixa */
+.dm-new-order-wrapper {
+    width: 45px; /* Mesma largura do botão fechado */
+    height: 45px;
+    position: relative; /* Base para o posicionamento absoluto */
+    flex-shrink: 0; /* Impede que o flexbox esmague este espaço */
+    cursor: pointer;
+}
+
+.dm-new-order-wrapper:hover {
+    cursor: pointer;
+}
+
+/* 2. O botão agora é absoluto para expandir "por cima" do layout */
+.dm-tab-item.new-order {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    
+    width: 45px;
+    height: 45px;
+    padding: 0;
+    border-radius: 50px;
+    background-color: var(--dm-success);
+    color: white;
+    cursor: pointer;
+    overflow: hidden;
+    z-index: 10; /* Garante que fique acima de outros elementos se necessário */
+    
+    transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                box-shadow 0.3s ease;
+}
+.dm-btn-primary {
+    background-color: transparent;
+    color: var(--dm-white);
+    border: transparent;
+    font-weight: 400;
+    font-size: 15px;
+}
+
+/* 3. Ícone centralizado */
+.dm-tab-item.new-order::before {
+    content: '+';
+    min-width: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+/* 4. Texto */
+.dm-tab-item.new-order span {
+    opacity: 0;
+    white-space: nowrap;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
+    padding-right: 20px;
+}
+
+/* 5. Hover: Aumenta a largura sem afetar o wrapper externo */
+.dm-tab-item.new-order:hover {
+    width: 170px; 
+    box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
+}
+
+.dm-tab-item.new-order:hover span {
+    opacity: 1;
+}
+
+/* --- ORDERS GRID & CARDS --- */
+.dm-orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.dm-order-card {
+    background: var(--dm-white);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--dm-shadow);
+    display: flex;
+    flex-direction: column;
+    transition: 0.3s;
+    border-left: 8px solid #4caf50;
+}
+
+.dm-order-card:hover { transform: translateY(-5px); }
+
+.dm-status-PENDING { border-left-color: var(--dm-pending); }
+.dm-status-PREPARING { border-left-color: var(--dm-preparing); }
+.dm-status-ON_ROUTE { border-left-color: var(--dm-on_route); }
+.dm-status { border-left-color: var(--dm-success); }
+
+.dm-card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.dm-order-id {
+    background: #333;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.dm-order-timer {
+    font-size: 0.8rem;
+    color: var(--dm-danger);
+    font-weight: 600;
+}
+
+.dm-customer-name {
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+    color: var(--dm-text);
+}
+
+.dm-customer-address {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.dm-items-pill-container {
+    background: var(--dm-bg-page);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+    color: #444;
+}
+
+.dm-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.dm-order-total {
+    font-weight: 800;
+    color: var(--dm-success);
+    font-size: 1.1rem;
+}
+
+.dm-action-group button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+    min-width: 100px; /* Garante que os botões tenham o mesmo tamanho */
+    font-size: 0.9rem;
+}
+
+.dm-action-group button:hover {
+    filter: brightness(0.9); /* Efeito de clique suave */
+}
+
+/* Cores específicas por ação */
+.dm-btn-accept { 
+    background-color: var(--dm-pending); 
+}
+
+.dm-btn-dispatch { 
+    background-color: var(--dm-preparing); 
+}
+
+.dm-btn-on_route { 
+    background-color: var(--dm-on_route); /* Um tom de cinza azulado para diferenciar */
+}
+.dm-btn-finish { 
+    background-color: var(--dm-success);
+    padding: 15px; /* Um tom de cinza azulado para diferenciar */
+    
+}
+.dm-btn-finish:hover {
+cursor: default;
+filter: none; 
+}
+@media (max-width: 1024px) {
+    .dm-dashboard-container { margin-left: 0; flex-direction: column; }
+    .dm-sidebar-panel { width: 100%; height: auto; position: relative; top: 0; }
+}

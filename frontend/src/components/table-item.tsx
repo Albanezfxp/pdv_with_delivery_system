@@ -4,10 +4,10 @@ import { useEffect, useState } from "react"
 interface TableItemProps {
   table: string;
   status: string;
-  onClick?: () => void; // função de clique
+  onClick?: () => void;
 }
 
-export default function TableItem({table, status, onClick}: TableItemProps) {
+export default function   TableItem({table, status, onClick}: TableItemProps) {
 
   const [enumStatus, setEnumStatus] = useState<String>();
   const [stringStatus, setStringStatus] = useState<String>()

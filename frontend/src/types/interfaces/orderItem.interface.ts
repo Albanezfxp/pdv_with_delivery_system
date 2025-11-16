@@ -1,3 +1,6 @@
+import { OrderStatus } from "../enums/orderStatus.enum";
+import { OrderType } from "../enums/orderType.enum";
+
 export interface OrderItem {
   id: number;
   name: string;
@@ -33,5 +36,24 @@ export interface Order_Item_Entity {
   complementIds: number[];
   flavorIds: number[];
   subtotal: number;
-  links: [];
+  links?: [];
+}
+
+export interface ItemOrderRequest {
+  productVariationId: number;
+  quantity: number;
+  flavorIds: number[];
+  complementIds: number[];
+  type: string; 
+}
+
+export interface PayloadDto {
+    paymentEntries: {
+        method: string;
+        amount: number;
+    }[];
+    total: number;
+    addition: number;
+    discount: number;
+    type: OrderType
 }

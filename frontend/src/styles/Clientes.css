@@ -1,0 +1,12 @@
+.cliente-main-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin-left: 280px;
+} 
+
+.client-loading-container {
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-self: center
+}

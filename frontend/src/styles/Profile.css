@@ -1,0 +1,42 @@
+.profile-main-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin-left: 280px;
+} 
+
+.data-main-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 65vh;
+}
+
+.img-profile-container > img {
+    width: 200px;
+    height: 200px;
+    border-radius: 100%;
+}
+
+.name-profile-container > p {
+    font-weight: bolder;
+}
+
+.button-edit-profile-container {
+padding: 15px;
+}
+
+.button-edit-profile-container > button{
+border: transparent;
+width: 150px;
+height: 40px;
+background-color: #002c8b;
+color: aliceblue;
+border-radius: 10px;
+}
+
+.button-edit-profile-container > button:hover {
+    background-color: #002c8b;
+    transition: 200ms;
+    cursor: pointer;
+}

@@ -1,5 +1,6 @@
 package com.pizzaria_system.services;
 
+import com.pizzaria_system.data.dto.ProductCreateVariationDto;
 import com.pizzaria_system.data.dto.ProductVariationDto;
 import com.pizzaria_system.exception.RequireObjectIsNullException;
 import com.pizzaria_system.exception.ResourceNotFoundException;
@@ -108,7 +109,7 @@ class ProductVariationServiceTest {
 
     @Test
     void create_shouldSaveProductVariationSuccessfully() {
-        ProductVariationDto dto = new ProductVariationDto();
+        ProductCreateVariationDto dto = new ProductCreateVariationDto();
         dto.setSize("Pequena");
         dto.setPrice(BigDecimal.valueOf(30.00));
         dto.setStock(20);

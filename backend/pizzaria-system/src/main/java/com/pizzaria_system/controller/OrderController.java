@@ -1,10 +1,10 @@
 package com.pizzaria_system.controller;
 
 
-import com.pizzaria_system.data.dto.OrderItemDto;
-import com.pizzaria_system.data.dto.OrderItemRequest;
+import com.pizzaria_system.data.dto.*;
 import com.pizzaria_system.exception.ResourceNotFoundException;
 import com.pizzaria_system.model.OrderEntity;
+import com.pizzaria_system.model.OrderItem;
 import com.pizzaria_system.model.TableEntity;
 import com.pizzaria_system.repository.TableEntityRepository;
 import com.pizzaria_system.services.OrderService;
@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/order")
@@ -27,11 +28,38 @@ public class OrderController {
         this.tableEntityRepository = tableEntityRepository;
     }
 
-    @GetMapping("/by-table/{tableId}") // Removido "/order" do início
+    @GetMapping("/orders-delivery")
+    public Stream<OrderEntity> getAllOrdersFromDelivery() {
+        return  orderService.findAllOrdersForDelivery();
+    }
+
+    @GetMapping("/payments")
+    public ResponseEntity<List<OrderEntityDto>> getAllOdersWithPayments() {
+        return ResponseEntity.ok(orderService.getAllOrdersWithPayments());
+    }
+
+    @PostMapping("/close/{tableId}")
+    public ResponseEntity<OrderPayRequestDto> closeTableAndPay(
+            @PathVariable Long tableId,
+            @RequestBody OrderPayRequestDto request) {
+
+        OrderPayRequestDto responseDto = orderService.closeToTable(tableId, request);
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/by-table/{tableId}")
     public ResponseEntity<OrderEntity> getOrderByTable(@PathVariable Long tableId) {
         TableEntity table = tableEntityRepository.findByIdWithOrderAndItems(tableId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com ID: " + tableId));
         return ResponseEntity.ok(table.getOrder());
+    }
+
+    @GetMapping("/itens-table/{order_id}") // Removido "/order" do início
+    public ResponseEntity<List<OrderItemDto>> findByFkOderEntity(@PathVariable(value = "order_id") Long order_id) {
+        // O código de retorno HTTP "CONTINUE" (100) não é apropriado para retorno de dados.
+        // Use HttpStatus.OK (200) para sucesso.
+        return new ResponseEntity<>(orderService.findByFkOderEntity(order_id), HttpStatus.OK);
     }
 
     /**
@@ -50,12 +78,15 @@ public class OrderController {
         return new ResponseEntity<>(savedItemDto, HttpStatus.CREATED);
     }
 
-    @GetMapping("/itens-table/{order_id}") // Removido "/order" do início
-    public ResponseEntity<List<OrderItemDto>> findByFkOderEntity(@PathVariable(value = "order_id") Long order_id) {
-        // O código de retorno HTTP "CONTINUE" (100) não é apropriado para retorno de dados.
-        // Use HttpStatus.OK (200) para sucesso.
-        return new ResponseEntity<>(orderService.findByFkOderEntity(order_id), HttpStatus.OK);
+    @PostMapping("/create_order_delivery")
+    public ResponseEntity<OrderEntity> createOrderInDelivery(@RequestBody OrderDeliveryDto request) {
+        // Extraia o corpo (body) do ResponseEntity retornado pelo Service
+        OrderEntity savedOrder = orderService.createOrderInDelivery(request).getBody();
+
+        // Retorne um novo ResponseEntity com o status correto (201 Created)
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
     }
+
     // @GetMapping("/{orderId}") // Para buscar detalhes do pedido
     // @PostMapping("/close/{tableId}") // Para fechar o pedido da mesa
 

@@ -18,7 +18,7 @@ public class Category {
 
     private String imageUrl;
 
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
 
     public Long getId() {

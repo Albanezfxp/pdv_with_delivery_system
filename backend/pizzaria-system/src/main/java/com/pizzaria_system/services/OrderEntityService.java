@@ -6,6 +6,7 @@ import com.pizzaria_system.data.dto.OrderItemDto; // Importação necessária
 import com.pizzaria_system.exception.RequireObjectIsNullException;
 import com.pizzaria_system.exception.ResourceNotFoundException;
 import com.pizzaria_system.mapper.ObjectMapper;
+import com.pizzaria_system.mapper.OrderMapper;
 import com.pizzaria_system.model.OrderEntity;
 import com.pizzaria_system.model.OrderItem; // Importação necessária
 import com.pizzaria_system.repository.OrderEntityRepository;
@@ -29,10 +30,12 @@ public class OrderEntityService {
 
     public List<OrderEntityDto> findAll() {
         logger.info("Finding all OrderEntitys");
-        var OrderEntitys = ObjectMapper.parseListObject(repository.findAll(), OrderEntityDto.class);
-        OrderEntitys.forEach(this::addHateoasLinks);
-        return OrderEntitys;
+        var orders = OrderMapper.toDtoList(repository.findAll());
+        orders.forEach(this::addHateoasLinks);
+        return orders;
     }
+
+
 
     public OrderEntityDto findById(Long id) {
         logger.info("Finding one OrderEntity");

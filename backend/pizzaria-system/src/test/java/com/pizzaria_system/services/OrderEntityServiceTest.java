@@ -44,7 +44,7 @@ class OrderEntityServiceTest {
 
         OrderEntity order2 = new OrderEntity();
         order2.setId(2L);
-        order2.setStatus(OrderStatus.COMPLETED);
+        order2.setStatus(OrderStatus.PAYED);
         order2.setTotal(new BigDecimal("150.00"));
         order2.setCreatedAt(LocalDateTime.now());
 
@@ -55,7 +55,7 @@ class OrderEntityServiceTest {
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals(OrderStatus.OPEN, result.get(0).getStatus());
-        assertEquals(OrderStatus.COMPLETED, result.get(1).getStatus());
+        assertEquals(OrderStatus.PAYED, result.get(1).getStatus());
         verify(repository, times(1)).findAll();
     }
 
@@ -132,7 +132,7 @@ class OrderEntityServiceTest {
 
         OrderEntityDto updatedDto = new OrderEntityDto();
         updatedDto.setId(1L);
-        updatedDto.setStatus(OrderStatus.COMPLETED);
+        updatedDto.setStatus(OrderStatus.PAYED);
         updatedDto.setTotal(new BigDecimal("110.00"));
 
         when(repository.findById(1L)).thenReturn(Optional.of(existingOrder));
@@ -141,7 +141,7 @@ class OrderEntityServiceTest {
         OrderEntityDto result = service.update(updatedDto);
 
         assertNotNull(result);
-        assertEquals(OrderStatus.COMPLETED, result.getStatus());
+        assertEquals(OrderStatus.PAYED, result.getStatus());
         assertEquals(new BigDecimal("110.00"), result.getTotal());
         verify(repository, times(1)).findById(1L);
         verify(repository, times(1)).save(any(OrderEntity.class));

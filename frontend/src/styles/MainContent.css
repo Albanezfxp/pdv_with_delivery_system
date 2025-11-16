@@ -1,0 +1,18 @@
+/* MainContent.css */
+.main-content {
+  margin-left: 280px; /* Espaço para a Sidebar (240px + 20px left + folga) */
+  padding: 2.5rem;
+  min-height: 100vh; /* Garante que o fundo ocupe a tela toda */
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-fundo);
+  /* Remova: height, overflow e justify-content daqui */
+}
+
+.loading-wrapper {
+  flex: 1; /* Ocupa todo o espaço vertical restante */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}

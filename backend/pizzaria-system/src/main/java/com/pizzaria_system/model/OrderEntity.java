@@ -2,6 +2,7 @@ package com.pizzaria_system.model;
 
 import com.pizzaria_system.data.dto.PaymentEntry;
 import com.pizzaria_system.data.enums.OrderStatus;
+import com.pizzaria_system.data.enums.Order_Type;
 import com.pizzaria_system.data.enums.PaymentMethod;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,7 +10,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "orders") // é bom dar nome explícito
@@ -37,7 +40,7 @@ public class OrderEntity {
             name = "order_payments_made", // Nome da nova tabela de registro de pagamentos
             joinColumns = @JoinColumn(name = "order_id")
     )
-    private List<PaymentEntry> payments = new ArrayList<>(); // Use um nome no plural
+    private Set<PaymentEntry> payments = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
@@ -45,12 +48,17 @@ public class OrderEntity {
     private BigDecimal discount;
     private BigDecimal addition;
     private BigDecimal total;
+    private BigDecimal subtotal;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private Order_Type type;
 
     // Getters e setters
     public Long getId() { return id; }
@@ -65,11 +73,11 @@ public class OrderEntity {
     public TableEntity getTable() { return table; }
     public void setTable(TableEntity table) { this.table = table; }
 
-    public List<PaymentEntry> getPayments() {
+    public Set<PaymentEntry> getPayments() {
         return payments;
     }
 
-    public void setPayments(List<PaymentEntry> payments) {
+    public void setPayments(Set<PaymentEntry> payments) {
         this.payments = payments;
     }
 
@@ -90,4 +98,20 @@ public class OrderEntity {
 
     public List<OrderItem> getItems() { return items; }
     public void setItems(List<OrderItem> items) { this.items = items; }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    public Order_Type getType() {
+        return type;
+    }
+
+    public void setType(Order_Type type) {
+        this.type = type;
+    }
 }

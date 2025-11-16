@@ -1,59 +1,67 @@
 import { useEffect, useState } from "react";
-import TableItem from "./table-item";
 import axios from "axios";
-import { Table,  } from "../types/interfaces/table.interface";
 import { useNavigate } from "react-router-dom";
+
+import TableItem from "./table-item";
+import Loading from "./Loading";
+import GeralTitle from "./GeralTitle";
+
+import { Table } from "../types/interfaces/table.interface";
 import { TableStatus } from "../types/enums/TableStatus.enum";
-interface TableItemProps {
-  table: string;
-  status: TableStatus;
-  classStatus?: TableStatus;
-  onClick?: () => void; 
-}
+import Header from "./Header";
+import MainContent from "./MainContent";
 
 export default function TableSection() {
   const navigate = useNavigate();
   const [tables, setTables] = useState<Table[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios
       .get("http://localhost:8080/table")
       .then((res) => setTables(res.data))
-      .catch((err) => console.error("Erro ao tentar buscar as mesas"));
+      .finally(() => setLoading(false));
   }, []);
 
   const handleAddTable = () => {
-    const response = {
-      name: `Mesa ${tables.length + 1}`,
-      status: TableStatus.FREE,
-    };
+    setLoading(true);
+
     axios
-      .post("http://localhost:8080/table", response)
-      .then(() =>
-        axios
-          .get("http://localhost:8080/table")
-          .then((res) => setTables(res.data))
-      )
-      .catch((err) => console.log(err));
+      .post("http://localhost:8080/table", {
+        name: `Mesa ${tables.length + 1}`,
+        status: TableStatus.FREE,
+      })
+      .then(() => axios.get("http://localhost:8080/table"))
+      .then((res) => setTables(res.data))
+      .finally(() => setLoading(false));
   };
+
+if (loading) {  
+  return (
+    <div className="loading-wrapper">
+      <Loading text="Carregando..." />
+    </div>
+  );
+}
+
 
   return (
     <>
-      <div className="tables-title">
-        <h1>Mesas ({tables.length})</h1>
-        <hr />
-      </div>
+      <GeralTitle title={`Mesas (${tables.length})`} />
+
       <section className="tables-flex">
-        {tables.map((tables) => (
+        {tables.map((table) => (
           <TableItem
-            key={tables.id}
-            status={tables.status}
-            table={tables.name}
-            onClick={() => navigate(`/table/${tables.id}`)} // aqui passamos o id correto
+            key={table.id}
+            status={table.status}
+            table={table.name}
+            onClick={() => navigate(`/table/${table.id}`)}
           />
         ))}
+
         <div className="table-item add" onClick={handleAddTable}>
           <p>+</p>
+          <span>Adicionar Mesa</span>
         </div>
       </section>
     </>

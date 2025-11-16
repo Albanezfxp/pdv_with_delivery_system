@@ -1,6 +1,7 @@
 package com.pizzaria_system.services;
 
 import com.pizzaria_system.controller.ProductVariationController;
+import com.pizzaria_system.data.dto.ProductCreateVariationDto;
 import com.pizzaria_system.data.dto.ProductVariationDto;
 import com.pizzaria_system.exception.RequireObjectIsNullException;
 import com.pizzaria_system.exception.ResourceNotFoundException;
@@ -23,6 +24,9 @@ public class ProductVariationService {
     private Logger logger = LoggerFactory.getLogger(ProductVariationService.class.getName());
 
     @Autowired
+    private com.pizzaria_system.repository.ProductRepository productRepository;
+
+    @Autowired
     private ProductVariationRepository repository;
 
     public List<ProductVariationDto> findAll() {
@@ -40,15 +44,28 @@ public class ProductVariationService {
         return dto;
     }
 
-    public ProductVariationDto create(ProductVariationDto productVariation) {
-        logger.info("Creating one ProductVariations");
+    public ProductVariationDto create(ProductCreateVariationDto productVariationDto) {
+        logger.info("Creating one ProductVariation");
 
-        if(productVariation == null) throw new RequireObjectIsNullException("Category not found");
+        if(productVariationDto == null) throw new RequireObjectIsNullException("Payload is null");
 
-        var entity = ObjectMapper.parseObject(productVariation, ProductVariation.class);
-        repository.save(entity);
-        var  dto = ObjectMapper.parseObject(entity, ProductVariationDto.class);
-        addHateoasLinks(dto);
+        var entity = ObjectMapper.parseObject(productVariationDto, ProductVariation.class);
+        if (productVariationDto.getProductId() != null) {
+            var product = productRepository.findById(productVariationDto.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+            entity.setProduct(product);
+        } else {
+            throw new RequireObjectIsNullException("ProductId is required for variation");
+        }
+
+        var savedEntity = repository.save(entity);
+
+        ProductVariationDto dto = new ProductVariationDto();
+        dto.setId(savedEntity.getId());
+        dto.setSize(savedEntity.getSize());
+        dto.setPrice(savedEntity.getPrice());
+
         return dto;
     }
 
@@ -82,7 +99,6 @@ public class ProductVariationService {
     private void addHateoasLinks(ProductVariationDto dto) {
         dto.add(linkTo(methodOn(ProductVariationController.class).findById(dto.getId())).withSelfRel().withType("GET"));
         dto.add(linkTo(methodOn(ProductVariationController.class).findAll()).withRel("findAll").withType("GET"));
-        dto.add(linkTo(methodOn(ProductVariationController.class).create(dto)).withRel("create").withType("POST"));
         dto.add(linkTo(methodOn(ProductVariationController.class).update(dto.getId(), dto)).withRel("update").withType("PUT"));
         dto.add(linkTo(methodOn(ProductVariationController.class).delete(dto.getId())).withRel("delete").withType("DELETE"));
     }

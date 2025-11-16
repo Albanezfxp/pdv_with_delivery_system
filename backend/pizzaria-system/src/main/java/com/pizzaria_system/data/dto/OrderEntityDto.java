@@ -1,6 +1,7 @@
 package com.pizzaria_system.data.dto;
 
 import com.pizzaria_system.data.enums.OrderStatus;
+import com.pizzaria_system.data.enums.Order_Type;
 import com.pizzaria_system.data.enums.PaymentMethod;
 import com.pizzaria_system.model.Cliente;
 import com.pizzaria_system.model.OrderItem;
@@ -11,7 +12,9 @@ import org.springframework.hateoas.RepresentationModel;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class OrderEntityDto extends RepresentationModel<OrderEntityDto> {
 
@@ -23,16 +26,19 @@ public class OrderEntityDto extends RepresentationModel<OrderEntityDto> {
 
     private TableEntity table;
 
-    private List<PaymentEntry> paymentMethods = new ArrayList<>();
+    private Set<PaymentEntry> paymentMethods = new HashSet<>();
     private OrderStatus status;
 
     private BigDecimal discount;
     private BigDecimal addition;
     private BigDecimal total;
+    private BigDecimal subtotal;
 
     private LocalDateTime createdAt;
 
     private List<OrderItemDto> items;
+
+    private Order_Type type;
     // Getters e setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -46,12 +52,20 @@ public class OrderEntityDto extends RepresentationModel<OrderEntityDto> {
     public TableEntity getTable() { return table; }
     public void setTable(TableEntity table) { this.table = table; }
 
-    public List<PaymentEntry> getPaymentMethods() {
+    public Set<PaymentEntry> getPaymentMethods() {
         return paymentMethods;
     }
 
-    public void setPaymentMethods(List<PaymentEntry> paymentMethods) {
+    public void setPaymentMethods(Set<PaymentEntry> paymentMethods) {
         this.paymentMethods = paymentMethods;
+    }
+
+    public Order_Type getType() {
+        return type;
+    }
+
+    public void setType(Order_Type type) {
+        this.type = type;
     }
 
     public OrderStatus getStatus() { return status; }
@@ -75,5 +89,13 @@ public class OrderEntityDto extends RepresentationModel<OrderEntityDto> {
 
     public void setItems(List<OrderItemDto> items) {
         this.items = items;
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
     }
 }

@@ -1,0 +1,143 @@
+:root {
+    /* (Seu bloco :root original foi mantido e não repetido aqui) */
+    --primary-color: #2196f3;
+    --secondary-color: #f7a61d;
+    --danger-color: #ef5350;
+    --success-color: #4caf50;
+    --bg-light: #f9f9f9;
+    --bg-white: #ffffff;
+    --text-dark: #2c2c2c;
+    --border-light: #e0e0e0;
+    --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* ----------------------------------------------------------------- */
+/* 🚀 ESTILOS PARA A PÁGINA GERAL DE AJUSTES (GeralSettings) */
+/* ----------------------------------------------------------------- */
+
+.settings-page-container {
+    background-color: var(--bg-light);
+    min-height: 100vh;
+    font-family: "Poppins", sans-serif;
+}
+
+.main-settings-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin-left: 280px;
+}
+
+/* Título da Página de Ajustes */
+#title-geral {
+    margin-bottom: 2.5rem;
+}
+
+/* Container de Configurações - Estilo de Card principal */
+#geral-configs-container {
+    background-color: var(--bg-white);
+    border-radius: 16px;
+    box-shadow: var(--shadow-soft);
+    padding: 2rem;
+}
+
+.link-container-item {
+  display:  flex;
+  text-decoration: none;
+  color: black;
+  gap: 15px;
+  align-items: center;
+  justify-content: center;
+  width: 60%;
+}
+
+/* Título da Seção (Geral) */
+#title-geral-configs h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-light);
+}
+
+/* Container dos Links/Botões de Configuração */
+#main-links-container {
+    display: grid;
+    /* Adaptação: 3 colunas para desktop, se houver mais links no futuro */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    gap: 1.5rem;
+}
+
+/* Estilo do Card/Link Individual (e.g., Clientes) */
+#link-settings-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: var(--bg-light);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none; /* Para usar como link futuro */
+    color: var(--text-dark);
+}
+
+#link-settings-container:hover {
+    transform: translateY(-4px); /* Efeito 3D sutil */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); /* Sombra mais destacada */
+    border-color: var(--primary-color);
+    background-color: #fffaf0; /* Fundo suave ao passar o mouse */
+}
+
+/* Ícone de Configuração (e.g., Cliente) */
+#link-settings-container img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
+/* Título do Link */
+#link-settings-container h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* ----------------------------------------------------------------- */
+/* 📱 RESPONSIVIDADE PARA AJUSTES */
+/* ----------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    #main-geral-settings-container {
+        padding: 1.5rem;
+    }
+
+    #geral-configs-container {
+        padding: 1.5rem;
+    }
+
+    #title-geral-configs h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Layout de uma coluna em telas menores */
+    #main-links-container {
+        grid-template-columns: 1fr;
+    }
+
+    #link-settings-container {
+        padding: 1rem;
+    }
+
+    #link-settings-container img {
+        width: 32px;
+        height: 32px;
+    }
+
+    #link-settings-container h3 {
+        font-size: 1rem;
+    }
+}

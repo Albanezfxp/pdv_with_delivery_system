@@ -1,26 +1,162 @@
 import axios from "axios";
-
-const API = process.env.REACT_APP_API_URL
+import { ItemOrderRequest, Order_Item_Entity, PayloadDto } from "./types/interfaces/orderItem.interface";
+import { Product, ProductInterface } from "./types/interfaces/product.interface";
+import { categoryAdd } from "./types/interfaces/category.interface";
 
 const api = axios.create({
-    baseURL: API,
-    timeout: 10000,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-})
+baseURL: "http://localhost:8080", // <-- Use a URL base fixada aqui
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-  
 // Interceptor para tratar erros globais
 api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (error.response?.status === 401) {
-        // Token inválido/expirou - redirecionar para login
-        window.location.href = '/login';
-      }
-      return Promise.reject(error);
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token inválido/expirou - redirecionar para login
+      window.location.href = "/login";
     }
-  );
+    return Promise.reject(error);
+  }
+);
+
+export const fetchTable = async (id: string) => {
+  const response = await api.get(`/table/${id}`);
+  return response.data;
+};
+
+export const fetchAllTables = async () => {
+  const reponse = await api.get("/table");
+  return reponse.data;
+};
+
+export const fetchOrderItemsExternal = async (
+  orderId: number | string
+): Promise<Order_Item_Entity[]> => {
+  const response = await api.get(`/order/itens-table/${orderId}`);
+  return response.data;
+};
+
+export const fetchCategories = async () => {
+  const response = await api.get("/categories")
+  return response.data
+}
+
+export const fetchNewCategory = async (payload: categoryAdd) => {
+  const response = await api.post("/categories", payload)
+  return response.data
+}
+
+export const fetchDeleteCategory = async (id: number) => {
+  const response = await api.delete(`/categories/${id}`)
+}
+
+export const fetchFlavores = async () => {
+  const response = await api.get("/flavor")
+  return response.data;
+}
+
+export const fetchSaveName = async (tableId: number, tableName: string) => {
+  const response = await api.put(`/table/update-table/${tableId}`, {
+        name: tableName,
+      });
+  return response.data
+}
+
+export const fetchDeleteTable = async (tableId: number) => {
+  const response = await api.delete(`/table/${tableId}`)
+  return response.data;
+}
+
+export const fetchAddItemToOrder = async (itemOrderRequest: ItemOrderRequest, tableId: number) => {
+  const response = await api.post(`/order/add-item/${tableId}`, itemOrderRequest)
+  return response.data;
+}
+
+export const fecthDeleteItemToOrder = async (ordertItemId: number) => {
+  const response = await api.delete(
+        `/order/itens-table/${ordertItemId}`
+      );
+return response.data;
+}
+
+export const fetchCofirmPayment = async (payload: PayloadDto, tableId: number) => {
+  const response = await api.post(`/order/close/${tableId}`, payload)
+  return response.data;
+}
+
+export const fetchEditTableName = async (payload: string, tableId: number) => {
+  const response = await api.put(`/table/update-table/${tableId}`, {
+    name: payload
+  });
+  return response.data
+}
+
+export const fetchRemoveTable = async (tableId: number) => {
+  const response = await api.delete(`/table/${tableId}`)
+  return response.data;
+}
+
+export const fetchRemoveItemToOrder = async (orderItemId: number) => {
+  const response = await api.delete(`/order/itens-table/${orderItemId}`)
+  return response.data;
+}
+
+export const fetchAllOrders = async () => {
+  const response = await api.get("/order_entity")
+  return response.data;
+}
+
+export const fetchAllPaymentOrders = async () => {
+  const response = await api.get("/order/payments")
+  return response.data
+}
+
+export const fetchAllClients = async () => {
+  const response = await api.get("/clientes")
+  return response.data
+}
+
+export const fetchAllProducts = async () => {
+  const response = await api.get("/products")
+  return response.data
+}
+export const fetchCreateProduct = async (payload : Product) => {
+const newProduct = {
+    name: payload.name,
+    description: payload.description,
+    active: payload.active,
+    imageUrl: payload.imageUrl,
+    category: { id: Number(payload.categoryId) } 
+  };
+
+  const response = await api.post("/products", newProduct)
+  return response.data;
+}
+
+export const fetchCreateVariation = async (variation: any, productId: number) => {
+  const payload = {
+    productId: Number(productId), 
+    size: variation.size,
+    price: variation.price,
+    numberOfFlavor: variation.numberOfFlavor,
+    stock: variation.stock || 0
+  };
   
-  export default api;
+  const response = await api.post("/product_variation", payload);
+  return response.data;
+}
+
+export const fetchDeleteProduct = async (id: number) => {
+  const response = await api.delete(`/products/${id}`)
+  return  response.data;
+}
+
+export const fetchDeleteVariation = async (id: number) => {
+  const response = await api.delete(`/product_variation/${id}`)
+  return response.data;
+}
+export default api;

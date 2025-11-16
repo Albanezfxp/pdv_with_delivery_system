@@ -1,5 +1,6 @@
 package com.pizzaria_system.controller;
 
+import com.pizzaria_system.data.dto.ProductCreateVariationDto;
 import com.pizzaria_system.data.dto.ProductVariationDto;
 import com.pizzaria_system.services.ProductVariationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class ProductVariationController {
     }
 
     @PostMapping()
-    public ProductVariationDto create(@RequestBody ProductVariationDto ProductVariation) {
+    public ProductVariationDto create(@RequestBody ProductCreateVariationDto ProductVariation) {
         return service.create(ProductVariation);
     }
 
