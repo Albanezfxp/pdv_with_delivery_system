@@ -29,7 +29,7 @@ public class OrderDeliveryDto {
     private BigDecimal total;
     private BigDecimal subtotal;
     private LocalDateTime createdAt;
-    private List<OrderItem> items;
+    private List<OrderItemRequest> items;
     private Order_Type type;
 
     public Long getCliente_id() {
@@ -168,11 +168,11 @@ public class OrderDeliveryDto {
         this.createdAt = createdAt;
     }
 
-    public List<OrderItem> getItems() {
+    public List<OrderItemRequest> getItems() {
         return items;
     }
 
-    public void setItems(List<OrderItem> items) {
+    public void setItems(List<OrderItemRequest> items) {
         this.items = items;
     }
 

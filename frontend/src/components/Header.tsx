@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import logo from "../assets/logo/logoSamdLyn.jpg";
+import logo from "../assets/logo/Logo_moderno_da_ComandAI-removebg-preview.png";
 import "../styles/Header.css";
 import { Link } from "react-router-dom";
 

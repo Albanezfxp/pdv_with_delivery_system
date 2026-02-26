@@ -1,3 +1,10 @@
+/* =========================
+   DELIVERY MODAL — FULL (ATUALIZADO)
+   - Painel ESQUERDO mais clean/moderno
+   - Scroll na coluna esquerda inteira (itens + cliente + botão)
+   - Respiro da scrollbar
+========================= */
+
 .dm-modal-overlay {
   position: fixed;
   inset: 0;
@@ -12,68 +19,301 @@
 
 /* Container principal do Modal */
 .dm-modal-container {
-  background: #F4F5F7;
-;
-  height: 90vh; /* Alterado para height fixo para o scroll interno funcionar */
-  width: 95%;   /* Aumentado para melhor visualização em telas médias */
+  background: #f4f5f7;
+  height: 90vh;
+  width: 95%;
   border-radius: 20px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   overflow: hidden;
   display: flex;
-  flex-direction: column; /* Header, Content e Footer em coluna */
+  flex-direction: column;
   animation: dmSlideIn 0.3s ease-out;
 }
 
 /* Área de conteúdo que divide os dois painéis */
 .delivery-modal-content {
-  padding: 5px;
+  padding: 10px;
   display: flex;
-  flex: 1;       /* Ocupa todo o espaço entre header e footer */
-  width: 100%;   /* Ajustado de 90% para 100% para preencher o container */
+  flex: 1;
+  width: 100%;
   overflow: hidden;
   gap: 15px;
+  min-height: 0; /* essencial para overflow funcionar em flex */
 }
 
-/* Lado Esquerdo (TablePanel) */
+/* =========================
+   ✅ ESQUERDA (TablePanel) — CLEAN / MODERNO
+========================= */
 .dm-TablePanel-container {
-  width: 30%;    /* Painel de resumo geralmente é menor */
+  width: 30%;
+  background: #ffffff;
   border-right: 1px solid var(--borda);
+
+  /* layout */
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  /* scroll da coluna inteira */
+  min-height: 0;
   overflow-y: auto;
-  background-color: #fff;
+  overflow-x: hidden;
+
+  /* padding + respiro da scrollbar */
+  padding: 16px 30px 16px 16px; /* right maior p/ afastar conteúdo da barra */
+  scrollbar-gutter: stable;
+
+  /* visual */
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
 }
 
-/* Lado Direito (ProductSection) */
+/* Scrollbar discreta + “afastada” visualmente */
+.dm-TablePanel-container::-webkit-scrollbar {
+  width: 10px;
+}
+.dm-TablePanel-container::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.55);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+.dm-TablePanel-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* Remove scroll duplo interno da lista de itens */
+.dm-TablePanel-container .itens-order-container {
+  max-height: none !important;
+  overflow: visible !important;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Título do painel */
+.dm-tablePanel-title {
+  margin: 0;
+}
+.dm-tablePanel-title h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.2px;
+}
+
+/* Lista de itens (card clean) */
+.order-item-detail {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px 12px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: transform 0.12s ease, border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.order-item-detail:hover {
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.06);
+  transform: translateY(-1px);
+}
+
+.remove-item-button {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #fee2e2;
+  background: #fff1f2;
+  color: #ef4444;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: filter 0.15s ease, transform 0.12s ease;
+}
+
+.remove-item-button:hover {
+  filter: brightness(0.98);
+  transform: translateY(-1px);
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0; /* evita quebra feia */
+}
+
+.title-product-in-card {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  margin: 0;
+}
+
+.title-product-in-card span {
+  font-weight: 800;
+  color: #1d4ed8;
+}
+
+.title-product-in-card p {
+  margin: 0;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.item-flavors {
+  margin: 6px 0 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.item-price {
+  display: inline-block;
+  margin-top: 10px;
+  font-weight: 900;
+  color: #2563eb;
+}
+
+/* =========================
+   CLIENTE (dentro do painel esquerdo)
+========================= */
+.dm-clientInfo-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.dm-clientInfo-header h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.dm-clientInfo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Inputs (clean) */
+.dm-input-row {
+  display: flex;
+  gap: 12px;
+  margin: 0; /* remove margem antiga */
+}
+
+.flex-1 {
+  flex: 1;
+}
+.flex-2 {
+  flex: 2;
+}
+.flex-3 {
+  flex: 3;
+}
+
+.dm-input-group label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: #334155;
+  letter-spacing: 0.2px;
+}
+
+.dm-input-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  outline: none;
+  background: #ffffff;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    transform 0.12s ease;
+}
+
+.dm-input-group input:focus {
+  border-color: rgba(37, 99, 235, 0.55);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+/* Botão no final (clean/forte) */
+.dm_butto_save {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* separação visual */
+  padding-top: 8px;
+}
+
+.dm_butto_save > button {
+  width: 100%;
+}
+
+/* Reaproveitando seu botão, mas mais moderno */
+.add_pay {
+  margin-top: 0;
+  padding: 12px 14px;
+
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  border-radius: 14px;
+
+  cursor: pointer;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+
+  transition: transform 0.12s ease, filter 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
+.add_pay:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 26px rgba(37, 99, 235, 0.22);
+}
+
+/* =========================
+   DIREITA (ProductSection)
+========================= */
 .dm-ProductSection-container {
-  width: 70%;    /* Grid de produtos precisa de mais espaço */
+  width: 70%;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  min-height: 0;
   background-color: var(--bg-fundo);
+  border-radius: 16px;
 }
 
-/* Ajuste para o scroll suave */
-.dm-TablePanel-container::-webkit-scrollbar,
+/* Scrollbar direita */
 .dm-ProductSection-container::-webkit-scrollbar {
   width: 6px;
 }
-
-.dm-TablePanel-container::-webkit-scrollbar-thumb,
 .dm-ProductSection-container::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius: 10px;
 }
 
-/* Responsividade para telas menores */
-@media (max-width: 1024px) {
-  .delivery-modal-content {
-    flex-direction: column; /* Empilha em telas pequenas */
-  }
-  .dm-TablePanel-container, 
-  .dm-ProductSection-container {
-    width: 100%;
-    height: 50%;
-  }
-}
+/* HEADER */
 .dm-modal-header {
   background: #3a4f70;
   color: white;
@@ -83,11 +323,13 @@
   align-items: center;
 }
 
-.dm-modal-header h2 { font-size: 1.5rem; margin: 0; }
-.dm-modal-header p { font-size: 0.85rem; opacity: 0.7; margin: 4px 0 0 0; }
+.dm-modal-header h2 {
+  font-size: 1.5rem;
+  margin: 0;
+}
 
 .dm-close-btn {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border: none;
   color: white;
   width: 40px;
@@ -100,116 +342,82 @@
   transition: 0.2s;
 }
 
-.dm-close-btn:hover { background: #ef4444; }
-
-.dm-components-container {
-  display: flex;
-  gap: 105px;
+.dm-close-btn:hover {
+  background: #ef4444;
 }
 
-.dm-modal-form { padding: 24px; max-height: 70vh; overflow-y: auto; }
-
-.dm-form-section { margin-bottom: 32px; }
-
-.dm-section-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.dm-step-number {
-  background: #e6b800;
-  color: #fff;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 0.8rem;
-}
-
-.dm-input-row { display: flex; gap: 16px; margin-bottom: 16px; }
-.flex-1 { flex: 1; }
-.flex-2 { flex: 2; }
-.flex-3 { flex: 3; }
-
-.dm-input-group label {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #475569;
-}
-
-.dm-input-group input, .dm-item-row input {
-  width: 100%;
-  padding: 12px;
+.dm-btn-cep {
+  width: 44px;
+  height: 44px;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  outline: none;
-  transition: 0.2s;
-}
-
-.dm-input-group input:focus { border-color: #e6b800; box-shadow: 0 0 0 3px rgba(230,184,0,0.1); }
-
-/* ITENS LIST */
-.dm-item-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-
-.dm-remove-item {
-  background: #fee2e2;
-  color: #ef4444;
-  border: none;
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.dm-add-item-btn {
-  background: #f8fafc;
-  border: 2px dashed #e2e8f0;
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  color: #64748b;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #3a4f70;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-}
-
-.dm-add-item-btn:hover { border-color: #e6b800; color: #e6b800; }
-
-/* FOOTER */
-.dm-modal-footer {
-  border-top: 1px solid #e2e8f0;
-  padding-top: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.dm-total-display span { font-size: 0.85rem; color: #64748b; display: block; }
-.dm-total-display strong { font-size: 1.5rem; color: #1e293b; }
-
-.dm-footer-btns { display: flex; gap: 12px; }
-
-.dm-btn-save {
-  background: #e6b800;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
-  font-weight: 700;
   cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease,
+    box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
+.dm-btn-cep:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.dm-btn-cep:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.dm-btn-cep:focus-visible {
+  outline: none;
+  border-color: #e6b800;
+  box-shadow: 0 0 0 3px rgba(230, 184, 0, 0.18);
+}
+
+.dm-btn-cep:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Se o ícone for react-icons (ex: <FiSearch />) */
+.dm-btn-cep svg {
+  width: 18px;
+  height: 18px;
+}
+.dm-campo-cep {
+  display: flex;
+  gap: 5px;
+}
+
+/* Animação */
 @keyframes dmSlideIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+  .delivery-modal-content {
+    flex-direction: column;
+  }
+
+  .dm-TablePanel-container,
+  .dm-ProductSection-container {
+    width: 100%;
+    height: 50%;
+    min-height: 0;
+  }
 }

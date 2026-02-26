@@ -9,6 +9,7 @@ import java.util.Objects;
 public class Address {
     private String nickname;
     private String cep;
+    private String neighborhood;
     private String street;
     private String number;
     private String complement;
@@ -38,6 +39,14 @@ public class Address {
 
     public void setStreet(String street) {
         this.street = street;
+    }
+
+    public String getNeighborhood() {
+        return neighborhood;
+    }
+
+    public void setNeighborhood(String neighborhood) {
+        this.neighborhood = neighborhood;
     }
 
     public String getNumber() {

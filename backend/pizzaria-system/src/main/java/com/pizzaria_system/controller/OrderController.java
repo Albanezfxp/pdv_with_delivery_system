@@ -2,6 +2,7 @@ package com.pizzaria_system.controller;
 
 
 import com.pizzaria_system.data.dto.*;
+import com.pizzaria_system.data.enums.OrderStatus;
 import com.pizzaria_system.exception.ResourceNotFoundException;
 import com.pizzaria_system.model.OrderEntity;
 import com.pizzaria_system.model.OrderItem;
@@ -89,6 +90,15 @@ public class OrderController {
 
     // @GetMapping("/{orderId}") // Para buscar detalhes do pedido
     // @PostMapping("/close/{tableId}") // Para fechar o pedido da mesa
+
+    @PatchMapping("/updatedStatus/{orderId}")
+    public OrderEntityDto updateStatusDeliveryOrder(
+            @PathVariable(value = "orderId") String id,
+            @RequestBody OrderStatus status
+            ) {
+        Long realId = Long.parseLong(id);
+        return orderService.updateStatusOrderDelivery(status, realId);
+    }
 
     @DeleteMapping("/itens-table/{product_id}")
     public void removeItemToTable(@PathVariable("product_id") Long product_id) {

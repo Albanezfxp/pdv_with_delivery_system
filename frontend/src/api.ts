@@ -2,6 +2,8 @@ import axios from "axios";
 import { ItemOrderRequest, Order_Item_Entity, PayloadDto } from "./types/interfaces/orderItem.interface";
 import { Product, ProductInterface } from "./types/interfaces/product.interface";
 import { categoryAdd } from "./types/interfaces/category.interface";
+import { OrderDeliveryRequest } from "./types/interfaces/orderDeliveryRequest.interface";
+import { OrderStatus } from "./types/enums/orderStatus.enum";
 
 const api = axios.create({
 baseURL: "http://localhost:8080", // <-- Use a URL base fixada aqui
@@ -73,6 +75,22 @@ export const fetchDeleteTable = async (tableId: number) => {
 
 export const fetchAddItemToOrder = async (itemOrderRequest: ItemOrderRequest, tableId: number) => {
   const response = await api.post(`/order/add-item/${tableId}`, itemOrderRequest)
+  return response.data;
+}
+
+export const fetchAddDelivery = async (order: OrderDeliveryRequest) => {
+  const response = await api.post(`/order/create_order_delivery`, order)
+  return response.data;
+}
+
+export const fetchAllDeliverys = async () => {
+  const response = await api.get(`/order/orders-delivery`)
+  return response.data;
+}
+
+export const fetchUpdateStatusOrderDelivery = async (status: OrderStatus, id: string ) => {
+  const realId = parseFloat(id);
+  const response = await api.patch(`/order/updatedStatus/${realId}`, status)
   return response.data;
 }
 

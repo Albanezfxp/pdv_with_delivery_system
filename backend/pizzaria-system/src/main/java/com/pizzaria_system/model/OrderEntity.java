@@ -31,7 +31,7 @@ public class OrderEntity {
 
     // 🔹 Dono da relação OneToOne (tem a FK table_id)
     @OneToOne
-    @JoinColumn(name = "table_id", unique = true)
+    @JoinColumn(name = "table_id", unique = true, nullable = true)
     private TableEntity table;
 
     // Mapeia a lista da classe embutível

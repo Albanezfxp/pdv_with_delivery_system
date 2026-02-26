@@ -1,5 +1,6 @@
 package com.pizzaria_system.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,6 +16,7 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
+    @JsonIgnore
     private OrderEntity order;
 
     // A unidade vendável atômica é a VARIAÇÃO do produto (tamanho, preço)

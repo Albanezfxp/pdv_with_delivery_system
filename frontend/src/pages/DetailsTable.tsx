@@ -239,6 +239,7 @@ export default function DetailsTable() {
           table={table}
           key={table.id}
           selectedProduct={selectedProduct}
+          mode="TABLE"
         />
       )}
 

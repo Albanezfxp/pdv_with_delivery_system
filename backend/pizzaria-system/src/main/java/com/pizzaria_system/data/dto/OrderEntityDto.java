@@ -7,7 +7,7 @@ import com.pizzaria_system.model.Cliente;
 import com.pizzaria_system.model.OrderItem;
 import com.pizzaria_system.model.TableEntity;
 import com.pizzaria_system.model.Usuario;
-import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas  .RepresentationModel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

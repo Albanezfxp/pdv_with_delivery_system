@@ -3,23 +3,19 @@ package com.pizzaria_system.services;
 import com.pizzaria_system.data.dto.*;
 import com.pizzaria_system.data.enums.OrderStatus;
 import com.pizzaria_system.data.enums.Order_Type;
-import com.pizzaria_system.data.enums.PaymentMethod;
 import com.pizzaria_system.data.enums.TableStatus;
 import com.pizzaria_system.exception.ResourceNotFoundException;
 import com.pizzaria_system.mapper.ObjectMapper;
 import com.pizzaria_system.model.*;
 import com.pizzaria_system.repository.*;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,7 +28,7 @@ public class OrderService {
     private final ComplementRepository complementRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderEntityRepository orderRepository;
-    private final OrderEntityRepository orderEntityRepository;
+    private final ClienteRepository clienteRepository;
 
     public OrderService(
             TableEntityRepository tableRepository,
@@ -40,47 +36,39 @@ public class OrderService {
             FlavorRepository flavorRepository,
             ComplementRepository complementRepository,
             OrderItemRepository orderItemRepository,
-            OrderEntityRepository orderRepository, OrderEntityRepository odersRepository) {
+            OrderEntityRepository orderRepository,
+            ClienteRepository clienteRepository
+    ) {
         this.tableRepository = tableRepository;
         this.variationRepository = variationRepository;
         this.flavorRepository = flavorRepository;
         this.complementRepository = complementRepository;
         this.orderItemRepository = orderItemRepository;
         this.orderRepository = orderRepository;
-        this.orderEntityRepository = odersRepository;
+        this.clienteRepository = clienteRepository;
     }
-    @Autowired
-    ClienteRepository clienteRepository;
 
     public Stream<OrderEntity> findAllOrdersForDelivery() {
-        List<OrderEntity> orders = orderEntityRepository.findAll();
-        return orders.stream().filter(o -> o.getType() == Order_Type.DELIVERY);
+        return orderRepository.findAll()
+                .stream()
+                .filter(o -> o.getType() == Order_Type.DELIVERY);
     }
 
     // --- Lógica de Busca de Itens por FK (GET /order/itens-table/{id}) ---
-
     public List<OrderItemDto> findByFkOderEntity(Long order_id) {
-        // Assume-se que o findByOrder_Id no repository está usando JOIN FETCH
-        // para carregar ProductVariation e Product, evitando LazyInitializationException.
         List<OrderItem> itensEntities = orderItemRepository.findByOrder_Id(order_id);
-
-        return itensEntities.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return itensEntities.stream().map(this::convertOrderItemToDto).collect(Collectors.toList());
     }
 
-    // Método auxiliar para conversão CORRIGIDO para incluir o Size
-    private OrderItemDto convertToDto(OrderItem item) {
+    private OrderItemDto convertOrderItemToDto(OrderItem item) {
         OrderItemDto dto = new OrderItemDto();
         dto.setId(item.getId());
 
-        // Garante que a ProductVariation existe antes de acessar o Produto e o Size
         if (item.getProductVariation() != null && item.getProductVariation().getProduct() != null) {
             dto.setName(item.getProductVariation().getProduct().getName());
-            dto.setSize(item.getProductVariation().getSize()); // <<-- SIZE ADICIONADO
+            dto.setSize(item.getProductVariation().getSize());
             dto.setProductVariationId(item.getProductVariation().getId());
         } else {
-            // Fallback caso o produto/variação não exista (para evitar NPE)
             dto.setName("Item Indisponível");
             dto.setSize("N/A");
         }
@@ -90,7 +78,6 @@ public class OrderService {
         dto.setSubtotal(item.getSubtotal());
         dto.setOrderId(item.getOrder().getId());
 
-        // Mapeamento de IDs de Sabor e Complemento (Assumindo que estão EAGER ou carregados)
         if (item.getFlavors() != null) {
             dto.setFlavorIds(item.getFlavors().stream().map(Flavor::getId).toList());
         }
@@ -101,7 +88,25 @@ public class OrderService {
         return dto;
     }
 
+    /**
+     * ✅ DELIVERY (corrigido)
+     *
+     * PRINCIPAIS CORREÇÕES AQUI:
+     * 1) DELIVERY não usa discount/addition -> seta ZERO (igual sua regra)
+     * 2) NÃO faz newOrder.setItems(request.getItems()) porque isso causa:
+     *    "detached entity passed to persist" (itens vindos do front são "soltos")
+     *    -> aqui nós CRIAMOS e SALVAMOS os OrderItem corretamente.
+     *
+     * ⚠️ IMPORTANTE:
+     * - Para funcionar 100%, o ideal é que OrderDeliveryDto.items seja:
+     *      private List<OrderItemRequest> items;
+     *   (igual o seu DTO OrderItemRequest)
+     * - Se hoje está List<OrderItem>, mude para List<OrderItemRequest>.
+     */
+    @Transactional
     public ResponseEntity<OrderEntity> createOrderInDelivery(OrderDeliveryDto request) {
+
+        // 1) salva cliente
         Cliente newCliente = new Cliente();
         newCliente.setName(request.getCliente_name());
         newCliente.setBirthday(request.getCliente_birthday());
@@ -111,62 +116,133 @@ public class OrderService {
 
         Cliente savedCliente = clienteRepository.save(newCliente);
 
+        // 2) cria order
         OrderEntity newOrder = new OrderEntity();
+        newOrder.setCreatedAt(LocalDateTime.now());
         newOrder.setType(Order_Type.DELIVERY);
-        newOrder.setSubtotal(request.getSubtotal());
+
+        // ✅ status do delivery (você usa PREPARING)
         newOrder.setStatus(OrderStatus.PREPARING);
-        newOrder.setDiscount(request.getDiscount());
-        newOrder.setAddition(request.getAddition());
-        newOrder.setTotal(request.getTotal());
-        newOrder.setItems(request.getItems());
+
+        // ✅ DELIVERY não usa discount/addition
+        newOrder.setDiscount(BigDecimal.ZERO);
+        newOrder.setAddition(BigDecimal.ZERO);
+
+        // subtotal/total
+        BigDecimal subtotal = nvl(request.getSubtotal());
+        newOrder.setSubtotal(subtotal);
+
+        // se o front mandar total, usa; senão total = subtotal
+        BigDecimal total = request.getTotal() != null ? request.getTotal() : subtotal;
+        newOrder.setTotal(nvl(total));
+
+        // pagamentos
         newOrder.setPayments(request.getPaymentMethods());
-        newOrder.setClient(savedCliente); // Vincula o cliente já salvo
 
-        OrderEntity savedOrder = orderEntityRepository.save(newOrder);
+        // cliente
+        newOrder.setClient(savedCliente);
 
-        // 3. Retorno com Status 201 e o objeto criado no corpo
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
+        // salva order primeiro (precisa ter ID para relacionar itens)
+        OrderEntity savedOrder = orderRepository.save(newOrder);
+
+        // 3) salva itens (evita detached entity)
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Pedido delivery precisa ter pelo menos 1 item.");
+        }
+
+        List<OrderItem> savedItems = new ArrayList<>();
+
+        for (OrderItemRequest itemReq : request.getItems()) {
+            // busca variação
+            ProductVariation variation = variationRepository.findById(itemReq.getProductVariationId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Variação não encontrada: " + itemReq.getProductVariationId()));
+
+            // busca sabores/complementos
+            List<Flavor> flavors = itemReq.getFlavorIds() != null
+                    ? flavorRepository.findAllById(itemReq.getFlavorIds())
+                    : List.of();
+
+            List<Complement> complements = itemReq.getComplementIds() != null
+                    ? complementRepository.findAllById(itemReq.getComplementIds())
+                    : List.of();
+
+            // cria item novo (do zero)
+            OrderItem newItem = new OrderItem();
+            newItem.setOrder(savedOrder);
+            newItem.setProductVariation(variation);
+
+            int qty = itemReq.getQuantity() != null ? itemReq.getQuantity() : 1;
+            newItem.setQuantity(qty);
+
+            newItem.setFlavors(flavors);
+            newItem.setComplements(complements);
+
+            // notes
+            newItem.setNotes(buildNotes(variation, flavors, complements));
+
+            // subtotal do item
+            BigDecimal itemSubtotal = variation.getPrice().multiply(BigDecimal.valueOf(qty));
+            newItem.setSubtotal(itemSubtotal);
+
+            // persiste item
+            OrderItem itemSaved = orderItemRepository.save(newItem);
+            savedItems.add(itemSaved);
+        }
+
+        // 4) vincula itens no order e atualiza subtotal/total baseado no backend (opcional, mas recomendado)
+        savedOrder.setItems(savedItems);
+
+        BigDecimal backendSubtotal = savedItems.stream()
+                .map(OrderItem::getSubtotal)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        savedOrder.setSubtotal(backendSubtotal);
+
+        // se você não tem frete no backend: total = subtotal
+        savedOrder.setTotal(backendSubtotal);
+
+        OrderEntity finalOrder = orderRepository.save(savedOrder);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(finalOrder);
+    }
+
+    public OrderEntityDto updateStatusOrderDelivery(OrderStatus status, Long id) {
+        OrderEntity order = orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Order não encontrada"));
+        order.setStatus(status);
+        orderRepository.save(order);
+
+        return ObjectMapper.parseObject(order, OrderEntityDto.class);
     }
 
     public void removeItemToTable(Long productId) {
         var deleteProduct = orderItemRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item de pedido não encontrado"));
 
-        // 1. Recupera a Mesa e o Pedido associados
         TableEntity table = deleteProduct.getOrder().getTable();
         OrderEntity order = deleteProduct.getOrder();
 
-        // 2. Deleta o item do pedido
         orderItemRepository.delete(deleteProduct);
 
-        // 3. Verifica se a lista de itens do pedido está vazia AGORA
-        //    É necessário verificar no banco de dados ou em um objeto atualizado.
-        //    Se Order for 'LAZY', uma nova chamada a getItems() pode funcionar,
-        //    mas é mais seguro usar um COUNT ou RECARREGAR.
-
-        // *Melhor forma: Usar um count no repository:*
         if (orderItemRepository.countByOrderId(order.getId()) == 0) {
             table.setStatus(TableStatus.FREE);
-            // Salva a alteração de status da mesa
             tableRepository.save(table);
-            // Obs: Se o pedido (Order) também for finalizado/removido, faça isso aqui.
         }
     }
-
 
     @Transactional
     public OrderItemDto addItemToTableOrder(Long tableId, OrderItemRequest request) {
 
-        // Busca mesa e pedido associado
         TableEntity table = tableRepository.findByIdWithOrderAndItems(tableId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com ID: " + tableId));
-         table.setStatus(TableStatus.OCCUPIED);
+
+        table.setStatus(TableStatus.OCCUPIED);
 
         OrderEntity order = table.getOrder();
         if (order == null) {
             order = new OrderEntity();
             order.setCreatedAt(LocalDateTime.now());
-            order.setStatus(OrderStatus.OPEN);
+            order.setStatus(OrderStatus.OPEN); // ⚠️ se o CHECK no banco não permite OPEN, você precisa ajustar a constraint
             order.setTable(table);
             table.setOrder(order);
             order.setType(request.getType());
@@ -178,7 +254,6 @@ public class OrderService {
 
         order = orderRepository.save(order);
 
-        // Busca variação e relacionamentos
         ProductVariation variation = variationRepository.findById(request.getProductVariationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Variação de Produto não encontrada"));
 
@@ -190,7 +265,6 @@ public class OrderService {
                 ? complementRepository.findAllById(request.getComplementIds())
                 : List.of();
 
-        // Cria item
         OrderItem newItem = new OrderItem();
         newItem.setOrder(order);
         newItem.setProductVariation(variation);
@@ -198,28 +272,11 @@ public class OrderService {
         newItem.setFlavors(flavors);
         newItem.setComplements(complements);
 
-        // Monta observações (descrição) - CORRIGIDO PARA INCLUIR NOME/SIZE
-        String flavorNames = flavors.stream().map(Flavor::getName).collect(Collectors.joining(", "));
-        String complementNames = complements.stream().map(Complement::getName).collect(Collectors.joining(", "));
-
-        // CORREÇÃO CRÍTICA: Inicializa com Nome do Produto e Size
-        String notes = variation.getProduct().getName() + " " + variation.getSize();
-
-        if (!flavorNames.isEmpty()) {
-            notes += " (" + flavorNames + ")";
-        }
-        if (!complementNames.isEmpty()) {
-            notes += " + " + complementNames;
-        }
-
-        newItem.setNotes(notes);
-        // Subtotal
+        newItem.setNotes(buildNotes(variation, flavors, complements));
         newItem.setSubtotal(variation.getPrice().multiply(BigDecimal.valueOf(newItem.getQuantity())));
 
-        // Salva item e garante ID
         OrderItem savedItem = orderItemRepository.saveAndFlush(newItem);
 
-        // Atualiza lista de itens do pedido
         if (order.getItems() == null) order.setItems(new ArrayList<>());
         order.getItems().add(savedItem);
 
@@ -235,7 +292,7 @@ public class OrderService {
         dto.setProductVariationId(variation.getId());
         dto.setFlavorIds(flavors.stream().map(Flavor::getId).toList());
         dto.setComplementIds(complements.stream().map(Complement::getId).toList());
-        dto.setSize(variation.getSize()); // <<-- SIZE ADICIONADO CORRETAMENTE AQUI
+        dto.setSize(variation.getSize());
 
         return dto;
     }
@@ -243,34 +300,29 @@ public class OrderService {
     @Transactional
     public OrderPayRequestDto closeToTable(Long tableId, OrderPayRequestDto request) {
 
-        // 1. Lógica de Mesa e Pedido
         TableEntity table = tableRepository.findById(tableId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com ID: " + tableId));
 
-        // ⚠️ MELHORIA: Verifique se há um pedido ativo antes de continuar
         OrderEntity order = table.getOrder();
         if (order == null) {
             throw new ResourceNotFoundException("Não há pedido ativo para a Mesa ID: " + tableId);
         }
 
-        // 2. Aplica Pagamento e Salva Pedido
         order.setPayments(request.getPaymentEntries());
         order.setAddition(request.getAddition());
         order.setDiscount(request.getDiscount());
         order.setTotal(request.getTotal());
         order.setStatus(OrderStatus.PAYED);
         order.setSubtotal(request.getSubtotal());
-        // Remove os itens do pedido ao finalizar pagamento para que a
-        // consulta de itens retorne vazia (orphanRemoval remove os filhos)
+
         if (order.getItems() != null && !order.getItems().isEmpty()) {
             order.getItems().clear();
         }
 
-        // Desvincula a mesa e salva o pedido sem itens
         order.setTable(null);
-        orderEntityRepository.save(order);
+        orderRepository.save(order);
 
-        table.setOrder(null); // Desvincula
+        table.setOrder(null);
         if (table.getStatus() == TableStatus.OCCUPIED) {
             table.setStatus(TableStatus.FREE);
         }
@@ -280,28 +332,47 @@ public class OrderService {
     }
 
     public List<OrderEntityDto> getAllOrdersWithPayments() {
-        List<OrderEntity> orders = orderEntityRepository.findAllWithPayments();
-
-        // 🔹 CONVERSÃO MANUAL se o ObjectMapper não funcionar
-        return orders.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        List<OrderEntity> orders = orderRepository.findAllWithPayments();
+        return orders.stream().map(this::convertOrderEntityToDto).collect(Collectors.toList());
     }
 
-    private OrderEntityDto convertToDto(OrderEntity order) {
+    private OrderEntityDto convertOrderEntityToDto(OrderEntity order) {
         OrderEntityDto dto = new OrderEntityDto();
         dto.setId(order.getId());
         dto.setClient(order.getClient());
         dto.setUser(order.getUser());
         dto.setTable(order.getTable());
-        dto.setPaymentMethods(order.getPayments()); // 🔹 GARANTIR que payments está aqui
+        dto.setPaymentMethods(order.getPayments());
         dto.setStatus(order.getStatus());
         dto.setDiscount(order.getDiscount());
         dto.setAddition(order.getAddition());
         dto.setTotal(order.getTotal());
         dto.setSubtotal(order.getSubtotal());
         dto.setCreatedAt(order.getCreatedAt());
-
         return dto;
+    }
+
+    // ----------------- helpers -----------------
+
+    private BigDecimal nvl(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
+
+    private String buildNotes(ProductVariation variation, List<Flavor> flavors, List<Complement> complements) {
+        String productName = variation.getProduct() != null ? variation.getProduct().getName() : "Produto";
+        String size = variation.getSize() != null ? variation.getSize() : "";
+
+        String notes = (productName + " " + size).trim();
+
+        String flavorNames = (flavors == null ? List.<Flavor>of() : flavors)
+                .stream().map(Flavor::getName).filter(Objects::nonNull).collect(Collectors.joining(", "));
+
+        String complementNames = (complements == null ? List.<Complement>of() : complements)
+                .stream().map(Complement::getName).filter(Objects::nonNull).collect(Collectors.joining(", "));
+
+        if (!flavorNames.isEmpty()) notes += " (" + flavorNames + ")";
+        if (!complementNames.isEmpty()) notes += " + " + complementNames;
+
+        return notes;
     }
 }
