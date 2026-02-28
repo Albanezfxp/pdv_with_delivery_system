@@ -1,6 +1,9 @@
 package com.pizzaria_system.repository;
 
+import com.pizzaria_system.data.enums.Order_Type;
 import com.pizzaria_system.model.OrderEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,4 +36,6 @@ public interface OrderEntityRepository extends JpaRepository<OrderEntity, Long> 
             "WHERE o.id = :id")
     Optional<OrderEntity> findByIdWithPayments(@Param("id") Long id);
 
+
+    Page<OrderEntity> findByType(Order_Type type, Pageable pageable);
 }

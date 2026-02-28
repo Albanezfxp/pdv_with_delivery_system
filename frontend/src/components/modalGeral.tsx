@@ -209,22 +209,28 @@ export const ModalDeliveryOrderContainer = ({
     }
 
     const payload: OrderDeliveryRequest = {
-      cliente_name: customer.name,
-      cliente_phone: customer.phone,
-      cliente_email: customer.email || undefined,
-      cliente_endereco: {
-        cep: customer.address.cep,
-        street: customer.address.street,
-        neighborhood: customer.address.neighborhood,
-        city: customer.address.city,
-        reference: customer.address.reference,
-        number: customer.address.number,
-      },
-      items: orderItemsExternal,
-      type: OrderType.DELIVERY,
-      subtotal,
-      payment_methods: paymentMethod,
-    };
+  cliente_name: customer.name,
+  cliente_phone: customer.phone,
+  cliente_email: customer.email || undefined,
+  cliente_endereco: {
+    cep: customer.address.cep,
+    street: customer.address.street,
+    neighborhood: customer.address.neighborhood,
+    city: customer.address.city,
+    reference: customer.address.reference,
+    number: customer.address.number,
+  },
+  items: orderItemsExternal,
+  type: OrderType.DELIVERY,
+  subtotal,
+  total, // (recomendo mandar também)
+  paymentEntries: [
+    {
+      method: paymentMethod, // <- usa o select
+      amount: total,
+    },
+  ],
+};
 
     try {
 

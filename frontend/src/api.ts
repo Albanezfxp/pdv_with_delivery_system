@@ -73,6 +73,10 @@ export const fetchDeleteTable = async (tableId: number) => {
   return response.data;
 }
 
+export const fetchDeleteDeliveryOrder = async (id: number) => {
+  const response = await api.delete(`/order/delete-order-delivery/${id}`)
+}
+
 export const fetchAddItemToOrder = async (itemOrderRequest: ItemOrderRequest, tableId: number) => {
   const response = await api.post(`/order/add-item/${tableId}`, itemOrderRequest)
   return response.data;
@@ -83,14 +87,20 @@ export const fetchAddDelivery = async (order: OrderDeliveryRequest) => {
   return response.data;
 }
 
-export const fetchAllDeliverys = async () => {
-  const response = await api.get(`/order/orders-delivery`)
-  return response.data;
-}
+//OBS: DEVO PASSAR NO PARAMETRO O PAGE EO SIZE E BUSCAR  O CONTENT, PARA RETORNAR APENAS O ARRAY
+export const fetchAllDeliverys = async (page = 0, size = 12) => {
+  const res = await api.get("/order/orders-delivery", { params: { page, size } });
+  return res.data.content; 
+};
 
 export const fetchUpdateStatusOrderDelivery = async (status: OrderStatus, id: string ) => {
   const realId = parseFloat(id);
   const response = await api.patch(`/order/updatedStatus/${realId}`, status)
+  return response.data;
+}
+
+export const fetchDeliveryOrderById = async (id: number) => {
+  const response = await api.get(`/delivery_detail/${id}`)
   return response.data;
 }
 

@@ -27,7 +27,7 @@ export interface OrderDeliveryResponse {
 }
 
  interface Payment {
-  method: PaymentMethod;
+  method: string;
   amount: number;
 }
 
@@ -73,7 +73,9 @@ interface Client {
   size: string; // ex: "Média" | "Grande" (pode ampliar depois)
   price: number;
   numberOfFlavor: number;
-
+  product: {
+    name: string
+  }
   flavors: Flavor[]; // no JSON veio []
   complements: Complement[]; // no JSON veio []
   stock: number | null; // no JSON veio null

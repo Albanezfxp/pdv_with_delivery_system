@@ -1,3 +1,4 @@
+import { PaymentEntry } from "../../pages/DetailsTable";
 import { OrderType } from "../enums/orderType.enum";
 import { PaymentMethod } from "../enums/paymentMethods";
 import { Order_Item_Entity } from "./orderItem.interface";
@@ -15,8 +16,9 @@ export interface OrderDeliveryRequest {
         reference: string,
         city: string
     },
-    payment_methods: string,
     subtotal: number,
+    total:number,
     items: Order_Item_Entity[],
-    type: OrderType;
+    type: OrderType,
+    paymentEntries: { method: string; amount: number }[];
  }

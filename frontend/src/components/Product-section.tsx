@@ -12,27 +12,36 @@ interface ModalProps {
   categorys: Category[];
   selectedCategory: Category | null;
   setSelectedCategory: (category: Category) => void;
-  handleOpenFlavorModal: (productName: string, variation: ProductVariation) => void;
+  handleOpenFlavorModal: (
+    productName: string,
+    variation: ProductVariation,
+  ) => void;
   fetchTableData?: () => void;
   table?: Table;
-  handleAddItemOverride?: (variation: ProductVariation, productName: string) => void;
+  handleAddItemOverride?: (
+    variation: ProductVariation,
+    productName: string,
+  ) => void;
 }
 
-export default function ProductSection({ 
-  mode, 
-  categorys, 
-  selectedCategory, 
-  setSelectedCategory, 
-  handleOpenFlavorModal, 
-  fetchTableData, 
+export default function ProductSection({
+  mode,
+  categorys,
+  selectedCategory,
+  setSelectedCategory,
+  handleOpenFlavorModal,
+  fetchTableData,
   table,
-  handleAddItemOverride 
+  handleAddItemOverride,
 }: ModalProps) {
-  
   const isTable = mode === "TABLE";
   const order_type = isTable ? OrderType.TABLE : OrderType.DELIVERY;
 
-  const handleAddItemToOrder = async (variation: ProductVariation, productName: string, flavorIds: number[] = []) => {
+  const handleAddItemToOrder = async (
+    variation: ProductVariation,
+    productName: string,
+    flavorIds: number[] = [],
+  ) => {
     if (!table) return;
     try {
       const payload = {
@@ -40,7 +49,7 @@ export default function ProductSection({
         quantity: 1,
         flavorIds: flavorIds,
         complementIds: variation.complements?.map((c) => c.id) || [],
-        type: order_type            
+        type: order_type,
       };
       await fetchAddItemToOrder(payload, table.id);
       if (fetchTableData) await fetchTableData();
@@ -78,19 +87,34 @@ export default function ProductSection({
                   onClick={() => {
                     if (variation.numberOfFlavor > 0) {
                       handleOpenFlavorModal(product.name, variation);
-                    } else {
-                      handleAddItemToOrder(variation, product.name);
+                      return;
                     }
+
+                    // ✅ DELIVERY: usa override (adiciona no state do modal)
+                    if (!isTable) {
+                      handleAddItemOverride?.(variation, product.name);
+                      return;
+                    }
+
+                    // ✅ TABLE: chama API
+                    handleAddItemToOrder(variation, product.name);
                   }}
                 >
-                  <img src={product.imageUrl || notFoundImgProduct} alt={product.name} />
+                  <img
+                    src={product.imageUrl || notFoundImgProduct}
+                    alt={product.name}
+                  />
                   <div className="product-card-info">
                     <h3>{`${product.name} ${variation.size}`}</h3>
-                    {variation.numberOfFlavor > 0 && <p>Sabores: {variation.numberOfFlavor}</p>}
-                    <span className="price">R$ {variation.price.toFixed(2).replace(".", ",")}</span>
+                    {variation.numberOfFlavor > 0 && (
+                      <p>Sabores: {variation.numberOfFlavor}</p>
+                    )}
+                    <span className="price">
+                      R$ {variation.price.toFixed(2).replace(".", ",")}
+                    </span>
                   </div>
                 </div>
-              ))
+              )),
             )}
           </div>
         ) : (

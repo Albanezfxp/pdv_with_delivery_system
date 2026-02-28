@@ -9,6 +9,9 @@ import com.pizzaria_system.model.OrderItem;
 import com.pizzaria_system.model.TableEntity;
 import com.pizzaria_system.repository.TableEntityRepository;
 import com.pizzaria_system.services.OrderService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +33,14 @@ public class OrderController {
     }
 
     @GetMapping("/orders-delivery")
-    public Stream<OrderEntity> getAllOrdersFromDelivery() {
-        return  orderService.findAllOrdersForDelivery();
+    public ResponseEntity<Page<OrderEntity>> getAllOrdersFromDelivery(
+            //ERRO: TAVA PASSANDO O PATHVARIABLE AO INVES DO REQUESTPARAM
+            @RequestParam(value = "size", defaultValue = "12") Integer size,
+            @RequestParam(value = "page", defaultValue = "0") Integer page
+    ) {
+        //ERRO, TAVA PASSANDO PRIMEIRO O SIZE AO INVES DO PAGE
+        Pageable pageable = PageRequest.of(page, size);
+        return  ResponseEntity.ok(orderService.findAllOrdersForDelivery(pageable));
     }
 
     @GetMapping("/payments")
@@ -54,6 +63,11 @@ public class OrderController {
         TableEntity table = tableEntityRepository.findByIdWithOrderAndItems(tableId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa não encontrada com ID: " + tableId));
         return ResponseEntity.ok(table.getOrder());
+    }
+
+    @GetMapping("/delivery_detail/{id}")
+    public ResponseEntity<OrderEntityDto> findOrderDeliveryById(Long id) {
+        return ResponseEntity.ok(orderService.findOrderDeliveryById(id));
     }
 
     @GetMapping("/itens-table/{order_id}") // Removido "/order" do início
@@ -103,5 +117,10 @@ public class OrderController {
     @DeleteMapping("/itens-table/{product_id}")
     public void removeItemToTable(@PathVariable("product_id") Long product_id) {
         orderService.removeItemToTable(product_id);
+    }
+
+    @DeleteMapping("/delete-order-delivery/{id}")
+    public void removeOrderInDelivery(@PathVariable("id") Long id) {
+        orderService.removeOrderInDelivery(id);
     }
 }

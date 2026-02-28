@@ -22,7 +22,7 @@ public class OrderDeliveryDto {
     private Cliente client;
     private Usuario user;
     private TableEntity table;
-    private Set<PaymentEntry> paymentMethods = new HashSet<>();
+    private Set<PaymentEntry> paymentEntries;
     private OrderStatus status;
     private BigDecimal discount;
     private BigDecimal addition;
@@ -112,12 +112,12 @@ public class OrderDeliveryDto {
         this.table = table;
     }
 
-    public Set<PaymentEntry> getPaymentMethods() {
-        return paymentMethods;
+    public Set<PaymentEntry> getPaymentEntries() {
+        return paymentEntries;
     }
 
-    public void setPaymentMethods(Set<PaymentEntry> paymentMethods) {
-        this.paymentMethods = paymentMethods;
+    public void setPaymentEntries(Set<PaymentEntry> paymentEntries) {
+        this.paymentEntries = paymentEntries;
     }
 
     public OrderStatus getStatus() {

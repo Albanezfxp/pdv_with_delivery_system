@@ -9,6 +9,9 @@ import com.pizzaria_system.mapper.ObjectMapper;
 import com.pizzaria_system.model.*;
 import com.pizzaria_system.repository.*;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -48,10 +51,14 @@ public class OrderService {
         this.clienteRepository = clienteRepository;
     }
 
-    public Stream<OrderEntity> findAllOrdersForDelivery() {
-        return orderRepository.findAll()
-                .stream()
-                .filter(o -> o.getType() == Order_Type.DELIVERY);
+    public Page<OrderEntity> findAllOrdersForDelivery(Pageable pageable) {
+        return orderRepository
+                .findByType(Order_Type.DELIVERY, pageable);
+    }
+
+    public OrderEntityDto findOrderDeliveryById(Long id) {
+        Stream<OrderEntity> order = orderRepository.findById(id).stream().filter(o -> o.getType() == Order_Type.DELIVERY);
+        return ObjectMapper.parseObject(order, OrderEntityDto.class);
     }
 
     // --- Lógica de Busca de Itens por FK (GET /order/itens-table/{id}) ---
@@ -59,6 +66,8 @@ public class OrderService {
         List<OrderItem> itensEntities = orderItemRepository.findByOrder_Id(order_id);
         return itensEntities.stream().map(this::convertOrderItemToDto).collect(Collectors.toList());
     }
+
+
 
     private OrderItemDto convertOrderItemToDto(OrderItem item) {
         OrderItemDto dto = new OrderItemDto();
@@ -137,7 +146,7 @@ public class OrderService {
         newOrder.setTotal(nvl(total));
 
         // pagamentos
-        newOrder.setPayments(request.getPaymentMethods());
+        newOrder.setPayments(request.getPaymentEntries());
 
         // cliente
         newOrder.setClient(savedCliente);
@@ -205,6 +214,11 @@ public class OrderService {
         OrderEntity finalOrder = orderRepository.save(savedOrder);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(finalOrder);
+    }
+
+    public void removeOrderInDelivery(Long id) {
+        OrderEntity order = orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        orderRepository.delete(order);
     }
 
     public OrderEntityDto updateStatusOrderDelivery(OrderStatus status, Long id) {

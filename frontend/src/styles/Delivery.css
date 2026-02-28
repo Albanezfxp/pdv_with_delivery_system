@@ -16,6 +16,12 @@
   /* extras p/ animações */
   --dm-shadow-hover: 0 14px 30px rgba(0, 0, 0, 0.12);
   --dm-radius: 16px;
+
+  /* ✅ tokens do "Detalhe do pedido" */
+  --dd-muted: #64748b;
+  --dd-soft: #f3f6fb;
+  --dd-soft-2: #eef2ff;
+  --dd-ring: rgba(0, 44, 139, 0.18);
 }
 
 /* =========================
@@ -38,7 +44,7 @@
 }
 
 /* =========================
-   SIDEBAR PANEL
+   SIDEBAR PANEL (BASE)
 ========================= */
 .dm-sidebar-panel {
   width: 350px;
@@ -52,7 +58,6 @@
   height: calc(100vh - 120px);
   position: sticky;
   top: 20px;
-
   animation: dmFadeUp 420ms ease both;
 }
 
@@ -64,6 +69,407 @@
   color: var(--dm-text);
 }
 
+/* =========================
+   ✅ DETALHE DO PEDIDO (NOVA UI)
+   - Use essas classes no <aside> do "Detalhe do pedido"
+========================= */
+.dd-sidebar {
+  padding: 1.2rem;
+  border: 1px solid rgba(224, 224, 224, 0.7);
+  background:
+    radial-gradient(900px 300px at 90% -10%, rgba(0, 44, 139, 0.06), transparent 60%),
+    radial-gradient(800px 300px at 10% 0%, rgba(33, 150, 243, 0.06), transparent 60%),
+    var(--dm-white);
+}
+
+.dd-sidebar-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(224, 224, 224, 0.7);
+}
+
+.dd-sidebar-titlewrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dd-sidebar-eyebrow {
+  font-size: 0.78rem;
+  color: var(--dd-muted);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.dd-sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--dm-text);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.dd-status-badge {
+  width: fit-content;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--dd-soft);
+  color: #111827;
+}
+
+.dd-status-pending {
+  background: rgba(239, 83, 80, 0.12);
+  color: #b91c1c;
+  border-color: rgba(239, 83, 80, 0.18);
+}
+.dd-status-preparing {
+  background: rgba(247, 166, 29, 0.14);
+  color: #9a5b00;
+  border-color: rgba(247, 166, 29, 0.22);
+}
+.dd-status-onroute {
+  background: rgba(33, 150, 243, 0.12);
+  color: #075985;
+  border-color: rgba(33, 150, 243, 0.2);
+}
+.dd-status-finish {
+  background: rgba(76, 175, 80, 0.14);
+  color: #166534;
+  border-color: rgba(76, 175, 80, 0.22);
+}
+
+/* ✅ substitui seu close button antigo (sem position: fixed) */
+.dd-sidebar-close-btn,
+.dd-sidebar-trash-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 160ms ease, background 180ms ease, border-color 180ms ease;
+  color: #0f172a;
+  display: none;
+}
+
+.dd-sidebar-close-btn.open,
+.dd-sidebar-trash-btn.open {
+  display: block;
+}
+
+.dd-sidebar-close-btn:hover,
+.dd-sidebar-trash-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(239, 83, 80, 0.08);
+  border-color: rgba(239, 83, 80, 0.22);
+  color: #b91c1c;
+}
+
+/* Estado vazio */
+.dd-empty {
+  margin-top: 8px;
+  border-radius: 16px;
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+  background: linear-gradient(180deg, rgba(243, 246, 251, 0.9), rgba(255, 255, 255, 0.8));
+  padding: 18px;
+  text-align: center;
+  color: var(--dd-muted);
+}
+
+.dd-empty-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  margin: 0 auto 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 44, 139, 0.06);
+  border: 1px solid rgba(0, 44, 139, 0.12);
+  color: var(--dm-primary);
+  font-size: 22px;
+}
+
+.dd-empty h3 {
+  margin: 6px 0 6px;
+  color: #111827;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.dd-empty p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+/* Conteúdo do detalhe */
+.dd-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px;
+  overflow: auto;
+  width: 100%;
+}
+
+.dd-sidebar-btn-header {
+  display: flex;
+  gap: 10px;
+}
+
+.dd-top {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dd-idblock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dd-chip {
+  background: #111827;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.78rem;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+.dd-time {
+  color: var(--dd-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.dd-kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dd-kpi {
+  border-radius: 16px;
+  padding: 12px;
+  background: var(--dd-soft);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dd-kpi-label {
+  display: block;
+  color: var(--dd-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.dd-kpi-value {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.dd-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dd-section-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: 0.2px;
+}
+
+.dd-card {
+  border-radius: 16px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.04);
+}
+
+.dd-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.dd-label {
+  color: var(--dd-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+
+.dd-value {
+  color: #0f172a;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: right;
+  line-height: 1.25;
+}
+
+.dd-row-strong .dd-label,
+.dd-row-strong .dd-value {
+  font-weight: 900;
+  font-size: 0.9rem;
+}
+
+.dd-actions-inline {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.dd-btn {
+  border: 0;
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.dd-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.dd-btn-ghost {
+  background: var(--dd-soft-2);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  color: #1e293b;
+}
+
+.dd-btn-ghost:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.98);
+  box-shadow: 0 10px 16px rgba(2, 6, 23, 0.08);
+}
+
+.dd-btn-primary {
+  width: 100%;
+  background: var(--dm-primary);
+  color: #fff;
+  box-shadow: 0 12px 18px rgba(0, 44, 139, 0.18);
+}
+
+.dd-btn-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.98);
+  box-shadow: 0 14px 22px rgba(0, 44, 139, 0.22);
+}
+
+.dd-btn-secondary {
+  background: #0b5ed7;
+  color: #fff;
+}
+
+.dd-btn-secondary:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.98);
+}
+
+/* Lista de itens */
+.dd-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dd-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--dd-soft);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dd-item-left {
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.dd-item-qty {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  background: rgba(0, 44, 139, 0.08);
+  color: var(--dm-primary);
+  border: 1px solid rgba(0, 44, 139, 0.12);
+  flex: 0 0 auto;
+}
+
+.dd-item-info {
+  min-width: 0;
+}
+
+.dd-item-name {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.dd-item-sub {
+  margin: 3px 0 0;
+  font-size: 0.82rem;
+  color: var(--dd-muted);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.dd-item-price {
+  font-weight: 900;
+  color: #166534;
+  white-space: nowrap;
+}
+
+.dd-totals {
+  border-radius: 16px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 10px;
+}
+
+/* Footer de ações */
+.dd-footer {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(224, 224, 224, 0.7);
+}
+
+/* =========================
+   SIDEBAR STATS (antigo) - mantido caso você volte a usar
+========================= */
 .dm-stats-summary {
   border-top: 1px dashed var(--dm-border);
   padding-top: 15px;
@@ -84,17 +490,14 @@
   color: var(--dm-pending);
   font-weight: 700;
 }
-
 .dm-stat-preparing {
-    color: var(--dm-preparing);
+  color: var(--dm-preparing);
   font-weight: 700;
 }
-
 .dm-stat-in_rounter {
-    color: var(--dm-on_route);
+  color: var(--dm-on_route);
   font-weight: 700;
 }
-
 .dm-stat-info {
   color: var(--dm-success);
   font-weight: 700;
@@ -114,10 +517,7 @@
   color: white;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    transform 140ms ease,
-    box-shadow 180ms ease,
-    filter 180ms ease;
+  transition: transform 140ms ease, box-shadow 180ms ease, filter 180ms ease;
   will-change: transform;
 }
 
@@ -148,6 +548,264 @@
   min-width: 0;
 }
 
+/* =========================
+   FILTER (Drawer + Animation top-down)
+========================= */
+
+.dm-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--dm-border);
+  background: var(--dm-white);
+  color: var(--dm-text);
+  border-radius: 999px;
+  padding: 10px 14px;
+  cursor: pointer;
+  box-shadow: var(--dm-shadow);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  user-select: none;
+  margin: 6px 0 16px;
+}
+
+.dm-filter-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--dm-shadow-hover);
+  border-color: rgba(0,0,0,.12);
+}
+
+.dm-filter-btn.open {
+  transform: translateY(-1px);
+  box-shadow: var(--dm-shadow-hover);
+  border-color: rgba(0,0,0,.18);
+}
+
+.dm-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--dm-secondary);
+  color: #111;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Backdrop animado */
+.dm-filter-backdrop {
+  position: fixed;
+
+  inset: 0;
+  z-index: 70;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+
+.dm-filter-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Drawer abrindo de cima pra baixo */
+.dm-filter-drawer {
+  position: fixed;
+  width: min(420px, calc(100vw - 36px));
+
+  background: var(--dm-white);
+  border: 1px solid var(--dm-border);
+  border-radius: calc(var(--dm-radius) + 6px);
+  box-shadow: 0 18px 50px rgba(0,0,0,.22);
+  z-index: 80;
+  overflow: hidden;
+
+  /* estado FECHADO */
+  opacity: 0;
+  transform: translateY(-14px) scaleY(0.92);
+  transform-origin: top;
+  pointer-events: none;
+
+  transition:
+    transform .22s ease,
+    opacity .18s ease;
+}
+
+.dm-filter-drawer.open {
+  /* estado ABERTO */
+  opacity: 1;
+  transform: translateY(0) scaleY(1);
+  pointer-events: auto;
+}
+
+.dm-filter-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--dm-border);
+}
+
+.dm-filter-drawer-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--dm-text);
+}
+
+.dm-filter-drawer-header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  opacity: .75;
+}
+
+.dm-filter-close {
+  border: 1px solid var(--dm-border);
+  background: var(--dm-white);
+  color: var(--dm-text);
+  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.dm-filter-close:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--dm-shadow);
+}
+
+.dm-filter-grid {
+  padding: 14px 16px 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.dm-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dm-filter-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dm-text);
+  opacity: .85;
+}
+
+.dm-filter-field input,
+.dm-filter-field select {
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--dm-border);
+  border-radius: 12px;
+  padding: 0 12px;
+  outline: none;
+  background: var(--dm-white);
+  color: var(--dm-text);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.dm-filter-field input:focus,
+.dm-filter-field select:focus {
+  border-color: rgba(0, 44, 139, .35);
+  box-shadow: 0 0 0 3px rgba(0, 44, 139, .12);
+}
+
+.dm-filter-inline {
+  grid-column: span 2;
+}
+
+.dm-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--dm-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(0,0,0,.02);
+}
+
+.dm-check input {
+  width: 16px;
+  height: 16px;
+}
+
+.dm-filter-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--dm-border);
+  background: rgba(0,0,0,.02);
+}
+
+.dm-filter-primary,
+.dm-filter-secondary {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  border: 1px solid var(--dm-border);
+  transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+}
+
+.dm-filter-primary {
+  background: var(--dm-primary);
+  color: #fff;
+  border-color: transparent;
+}
+
+.dm-filter-secondary {
+  background: var(--dm-white);
+  color: var(--dm-text);
+}
+
+.dm-filter-primary:hover,
+.dm-filter-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--dm-shadow);
+}
+
+/* opcional: empty actions */
+.dm-empty-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 820px) {
+  .dm-filter-drawer {
+    right: 12px;
+    top: 84px;
+  }
+
+  .dm-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dm-filter-inline {
+    grid-column: span 1;
+  }
+}
+
+/* acessibilidade: reduzir animações */
+@media (prefers-reduced-motion: reduce) {
+  .dm-filter-drawer,
+  .dm-filter-backdrop,
+  .dm-filter-btn {
+    transition: none;
+  }
+}
+
 .dm-filter-tabs {
   display: flex;
   gap: 1rem;
@@ -176,10 +834,7 @@
   cursor: pointer;
   font-size: 0.9rem;
   white-space: nowrap;
-  transition:
-    transform 160ms ease,
-    background 220ms ease,
-    color 220ms ease,
+  transition: transform 160ms ease, background 220ms ease, color 220ms ease,
     box-shadow 220ms ease;
   will-change: transform;
 }
@@ -211,7 +866,6 @@
   cursor: pointer;
 }
 
-/* Botão absoluto que expande por cima do layout */
 .dm-tab-item.new-order {
   position: absolute;
   top: 0;
@@ -231,10 +885,8 @@
   overflow: hidden;
   z-index: 10;
 
-  transition:
-    width 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    box-shadow 0.25s ease,
-    transform 0.16s ease;
+  transition: width 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    box-shadow 0.25s ease, transform 0.16s ease;
 }
 
 .dm-tab-item.new-order:hover {
@@ -253,7 +905,25 @@
   cursor: pointer;
 }
 
-/* Ícone + */
+.dm-btn-primary-empty {
+  background-color: transparent;
+  color: var(--dm-white);
+  border: transparent;
+  font-weight: 400;
+  font-size: 15px;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+}
+.dm-btn-primary-empty {
+    background: var(--dm-success);
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 700;
+  box-shadow: 0 10px 18px rgba(76, 175, 80, 0.22);
+  transition: transform 140ms ease, filter 160ms ease, box-shadow 180ms ease;
+}
+
 .dm-tab-item.new-order::before {
   content: "+";
   min-width: 45px;
@@ -270,7 +940,6 @@
   transform: rotate(90deg);
 }
 
-/* Texto (se você usar span dentro) */
 .dm-tab-item.new-order span {
   opacity: 0;
   white-space: nowrap;
@@ -286,13 +955,12 @@
 /* =========================
    ORDERS GRID & CARDS
 ========================= */
-.dm-orders-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+.dm-orders-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
-/* Animação de entrada suave em cards */
 .dm-order-card {
   background: var(--dm-white);
   border-radius: var(--dm-radius);
@@ -300,12 +968,9 @@
   box-shadow: var(--dm-shadow);
   display: flex;
   flex-direction: column;
-  transition:
-    transform 200ms ease,
-    box-shadow 220ms ease,
-    filter 220ms ease;
+  transition: transform 200ms ease, box-shadow 220ms ease, filter 220ms ease;
   border-left: 8px solid #4caf50;
-
+  width: 650px;
   animation: dmCardIn 420ms ease both;
 }
 
@@ -314,7 +979,6 @@
   box-shadow: var(--dm-shadow-hover);
 }
 
-/* status colors */
 .dm-status-PENDING {
   border-left-color: var(--dm-pending);
 }
@@ -402,10 +1066,7 @@
   color: white;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    transform 140ms ease,
-    filter 160ms ease,
-    box-shadow 180ms ease;
+  transition: transform 140ms ease, filter 160ms ease, box-shadow 180ms ease;
   min-width: 100px;
   font-size: 0.9rem;
   will-change: transform;
@@ -422,24 +1083,19 @@
   box-shadow: none;
 }
 
-/* Cores específicas */
 .dm-btn-accept {
   background-color: var(--dm-pending);
 }
-
 .dm-btn-dispatch {
   background-color: var(--dm-preparing);
 }
-
 .dm-btn-on_route {
   background-color: var(--dm-on_route);
 }
-
 .dm-btn-finish {
   background-color: var(--dm-success);
   padding: 15px;
 }
-
 .dm-btn-finish:hover {
   cursor: default;
   filter: none;
@@ -451,15 +1107,14 @@
    EMPTY STATE (SEM PEDIDOS)
 ========================= */
 .dm-empty-state {
-  grid-column: 1 / -1; /* ocupa toda a largura do grid */
   background: var(--dm-white);
   border-radius: var(--dm-radius);
   box-shadow: var(--dm-shadow);
   padding: 2.2rem;
   text-align: center;
   border: 1px dashed var(--dm-border);
-
   animation: dmFadeUp 420ms ease both;
+  width: 100%;
 }
 
 .dm-empty-title {
@@ -481,10 +1136,7 @@
   padding: 10px 18px;
   font-weight: 700;
   box-shadow: 0 10px 18px rgba(76, 175, 80, 0.22);
-  transition:
-    transform 140ms ease,
-    filter 160ms ease,
-    box-shadow 180ms ease;
+  transition: transform 140ms ease, filter 160ms ease, box-shadow 180ms ease;
 }
 
 .dm-empty-state .dm-btn-primary:hover {
@@ -547,14 +1199,18 @@
   .dm-tab-item,
   .dm-sidebar-actions button,
   .dm-action-group button,
-  .dm-tab-item.new-order {
+  .dm-tab-item.new-order,
+  .dd-sidebar-close-btn,
+  .dd-btn {
     transition: none !important;
   }
 
   .dm-order-card:hover,
   .dm-tab-item:hover,
   .dm-sidebar-actions button:hover,
-  .dm-action-group button:hover {
+  .dm-action-group button:hover,
+  .dd-sidebar-close-btn:hover,
+  .dd-btn:hover {
     transform: none !important;
     box-shadow: var(--dm-shadow) !important;
   }
