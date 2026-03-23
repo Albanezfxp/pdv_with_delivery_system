@@ -27,7 +27,7 @@ public class ProductService {
 
     public List<ProductDto> findAll() {
         logger.info("Finding all Products");
-        var Products = ObjectMapper.parseListObject(repository.findAll(), ProductDto.class);
+        var Products = ObjectMapper.parseListObject(repository.findAll(), ProductDto.class).stream().filter(p -> p.getActive() == true).toList();
         Products.forEach(this::addHateoasLinks);
         return Products;
     }
@@ -69,6 +69,13 @@ public class ProductService {
         addHateoasLinks(dto);
         return dto;
 
+    }
+
+    public void excludeProduct(Long id) {
+        var product = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        product.setActive(false);
+
+        repository.save(product);
     }
 
     public void delete(Long id) {

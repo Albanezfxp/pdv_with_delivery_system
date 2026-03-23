@@ -55,7 +55,7 @@ class CategoryServiceTest {
         List<CategoryDto> exprectDtos = List.of(categoryDto1, categoryDto2);
 
         when(repository.findAll()).thenReturn(categories);
-        List<CategoryDto> resultDtos = service.findAll(); // já é List<CategoryDto>
+        List<Category> resultDtos = service.findAll(); // já é List<CategoryDto>
 
         assertEquals(exprectDtos, resultDtos);
 
@@ -65,7 +65,7 @@ class CategoryServiceTest {
     void findAll_shouldReturnEmptyListWhenNoCategoriesAreFound() {
         when(repository.findAll()).thenReturn(Collections.emptyList());
 
-        List<CategoryDto> result = service.findAll();
+        List<Category> result = service.findAll();
 
         assertEquals(Collections.emptyList(), result);
     }

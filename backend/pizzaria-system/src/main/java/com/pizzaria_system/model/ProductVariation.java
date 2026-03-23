@@ -18,7 +18,7 @@ public class ProductVariation {
     @ManyToOne
     @JsonIgnore
     private Product product;
-
+    private Boolean active;
     private String size;
     private BigDecimal price;
     @Column(nullable = true)
@@ -37,9 +37,18 @@ public class ProductVariation {
     )
     private List<Complement> complements;
 
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
     public Long getId() {
         return id;
     }
+
 
     public void setId(Long id) {
         this.id = id;

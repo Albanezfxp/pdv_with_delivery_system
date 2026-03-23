@@ -1,6 +1,7 @@
 package com.pizzaria_system.controller;
 
 import com.pizzaria_system.data.dto.CategoryDto;
+import com.pizzaria_system.model.Category;
 import com.pizzaria_system.services.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -19,7 +20,7 @@ public class CategoryController {
     @GetMapping(
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public List<CategoryDto> findAll() {
+    public List<Category> findAll() {
         return service.findAll();
     }
 

@@ -24,10 +24,32 @@ public class CategoryService {
     @Autowired
     private CategoryRepository repository;
 
-    public List<CategoryDto> findAll() {
+    public List<Category> findAll() {
         logger.info("Finding all categories");
-        var categories = ObjectMapper.parseListObject(repository.findAll(), CategoryDto.class);
-        categories.forEach(this::addHateoasLinks);
+
+        var categories =repository.findAll();
+
+        // ✅ filtra produtos inativos (e variações inativas se existir active nelas)
+        categories.forEach(c -> {
+            if (c.getProducts() != null) {
+                c.setProducts(
+                        c.getProducts().stream()
+                                .filter(p -> p.getActive() == null || p.getActive()) // mantém true (ou null como true)
+                                .peek(p -> {
+                                    if (p.getVariations() != null) {
+                                        p.setVariations(
+                                                p.getVariations().stream()
+                                                        .filter(v -> v.getActive() == null || v.getActive())
+                                                        .toList()
+                                        );
+                                    }
+                                })
+                                .filter(p -> p.getVariations() == null || !p.getVariations().isEmpty())
+                                .toList()
+                );
+            }
+        });
+
         return categories;
     }
 

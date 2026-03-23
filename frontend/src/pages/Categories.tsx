@@ -100,10 +100,10 @@ export default function Categories() {
                                             </td>
                                             <td className="actions-cell">
                                                 <button 
-                                                    className="btn-delete-trigger" 
+                                                    className="btn-delete-product" 
                                                     onClick={() => openExcludeModal(cat.id)}
                                                 >
-                                                    🗑️
+                                                    Excluir
                                                 </button>
                                             </td>
                                         </tr>

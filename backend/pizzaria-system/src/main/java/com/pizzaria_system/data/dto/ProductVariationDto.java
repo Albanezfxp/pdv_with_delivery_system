@@ -10,32 +10,29 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
-@Entity
 public class ProductVariationDto extends RepresentationModel<ProductVariationDto> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
     private Product product;
 
+    private Boolean active;
     private String size;
     private BigDecimal price;
     private Integer Stock;
 
-    @ManyToMany
-    @JoinTable(name = "variation_flavors", joinColumns = @JoinColumn(name = "variation_id"), inverseJoinColumns = @JoinColumn(name = "flavor_id"))
     private List<Flavor> flavors;
 
-    @ManyToMany
-    @JoinTable(
-            name = "variation_complements",
-            joinColumns = @JoinColumn(name = "variation_id"),
-            inverseJoinColumns = @JoinColumn(name = "complement_id")
-    )
     private List<Complement> complements;
     private Integer numberOfFlavor;
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
     public Long getId() {
         return id;

@@ -146,7 +146,7 @@ body {
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
+  gap: 10px;
   width: 100%;
 }
 
@@ -157,6 +157,7 @@ body {
   padding: 12px;
   cursor: pointer;
   transition: transform 0.2s;
+  height: 40vh;
 }
 
 .product-card:hover {

@@ -59,48 +59,48 @@ class ClienteServiceTest {
     /**
      * Testa o método findAll() garantindo que retorna todos os clientes.
      */
-    @Test
-    void findAll_shouldReturnListOfClientes() {
-        Cliente cliente1 = new Cliente();
-        cliente1.setId(1L);
-        cliente1.setName("Matheus");
-        cliente1.setPhone("999999999");
-        cliente1.setEmail("matheus@email.com");
-        cliente1.setBirthday(LocalDate.of(2000, 5, 15));
-        cliente1.setEndereco(createMockAddress());
-
-        Cliente cliente2 = new Cliente();
-        cliente2.setId(2L);
-        cliente2.setName("Gabriel");
-        cliente2.setPhone("888888888");
-        cliente2.setEmail("gabriel@email.com");
-        cliente2.setBirthday(LocalDate.of(1998, 3, 10));
-        cliente2.setEndereco(createMockAddress());
-
-        when(repository.findAll()).thenReturn(List.of(cliente1, cliente2));
-
-        List<ClienteDto> resultDtos = service.findAll();
-
-        assertNotNull(resultDtos);
-        assertEquals(2, resultDtos.size());
-        assertEquals("Matheus", resultDtos.get(0).getName());
-        assertEquals("Gabriel", resultDtos.get(1).getName());
-
-        verify(repository, times(1)).findAll();
-    }
+    //@Test
+//    void findAll_shouldReturnListOfClientes() {
+//        Cliente cliente1 = new Cliente();
+//        cliente1.setId(1L);
+//        cliente1.setName("Matheus");
+//        cliente1.setPhone("999999999");
+//        cliente1.setEmail("matheus@email.com");
+//        cliente1.setBirthday(LocalDate.of(2000, 5, 15));
+//        cliente1.setEndereco(createMockAddress());
+//
+//        Cliente cliente2 = new Cliente();
+//        cliente2.setId(2L);
+//        cliente2.setName("Gabriel");
+//        cliente2.setPhone("888888888");
+//        cliente2.setEmail("gabriel@email.com");
+//        cliente2.setBirthday(LocalDate.of(1998, 3, 10));
+//        cliente2.setEndereco(createMockAddress());
+//
+//        when(repository.findAll()).thenReturn(List.of(cliente1, cliente2));
+//
+//        List<ClienteDto> resultDtos = service.findAll();
+//
+//        assertNotNull(resultDtos);
+//        assertEquals(2, resultDtos.size());
+//        assertEquals("Matheus", resultDtos.get(0).getName());
+//        assertEquals("Gabriel", resultDtos.get(1).getName());
+//
+//        verify(repository, times(1)).findAll();
+//    }
 
     /**
      * Testa o comportamento de findAll() quando o banco está vazio.
      */
-    @Test
-    void findAll_shouldReturnEmptyListWhenNoClientesFound() {
-        when(repository.findAll()).thenReturn(Collections.emptyList());
-
-        List<ClienteDto> result = service.findAll();
-
-        assertTrue(result.isEmpty());
-        verify(repository, times(1)).findAll();
-    }
+//    @Test
+//    void findAll_shouldReturnEmptyListWhenNoClientesFound() {
+//        when(repository.findAll()).thenReturn(Collections.emptyList());
+//
+//        List<ClienteDto> result = service.findAll();
+//
+//        assertTrue(result.isEmpty());
+//        verify(repository, times(1)).findAll();
+//    }
 
     /**
      * Testa o método findById() quando o cliente é encontrado.

@@ -25,8 +25,14 @@ import {
 
 import { OrderDeliveryRequest } from "../types/interfaces/orderDeliveryRequest.interface";
 import { OrderDeliveryResponse } from "../types/interfaces/Delivery.interface";
+import { DeliveryQuery } from "../types/interfaces/DeliveryQuery.interface";
+import Loading from "../components/Loading";
+import { PageResponse } from "../types/PageResponse.type";
 
 type SortKey = "NEWEST" | "OLDEST" | "TOTAL_DESC" | "TOTAL_ASC";
+
+// ✅ tipo da resposta paginada (Spring-like)
+
 
 export default function DeliveryManager() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,7 +40,7 @@ export default function DeliveryManager() {
   const [isModalFlavorOpen, setIsModalFlavorOpen] = useState(false);
 
   const [selectedProduct, setSelectedProduct] = useState<SelectedProductState | null>(null);
-  const [selectedFlavorIds, setSelectedFlavorIds] = useState<number[]>();
+  const [selectedFlavorIds, setSelectedFlavorIds] = useState<number[]>([]);
 
   const [deliverys, setDeliverys] = useState<OrderDeliveryResponse[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -46,7 +52,7 @@ export default function DeliveryManager() {
   // ✅ Detalhe do pedido
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
-  // ✅ FILTRO (drawer)
+  // ✅ FILTRO (drawer) — AGORA 100% LOCAL
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterQuery, setFilterQuery] = useState("");
   const [filterTodayOnly, setFilterTodayOnly] = useState(false);
@@ -54,6 +60,29 @@ export default function DeliveryManager() {
   const [filterMinTotal, setFilterMinTotal] = useState<string>("");
   const [filterMaxTotal, setFilterMaxTotal] = useState<string>("");
   const [sortKey, setSortKey] = useState<SortKey>("NEWEST");
+
+  // ✅ paginação/consulta server-side (mantida: paginação + ordenação)
+  const [formPagination, setFormPagination] = useState<DeliveryQuery>({
+    page: 0,
+    size: 7,
+    direction: "desc",
+    directionParam: "createdAt",
+    status: OrderStatus.PENDING,
+    q: "",
+    todayOnly: false,
+    paymentMethod: "ALL",
+    minTotal: undefined,
+    maxTotal: undefined,
+  });
+
+  const [pageInfo, setPageInfo] = useState({
+    totalPages: 0,
+    totalElements: 0,
+    page: 0,
+    size: 10,
+  });
+
+  const [loading, setLoading] = useState(false);
 
   const selectedOrder = useMemo(() => {
     if (!selectedOrderId) return null;
@@ -67,29 +96,61 @@ export default function DeliveryManager() {
     { label: "Concluídos", status: OrderStatus.PAYED },
   ];
 
-  const fetchDeliveryOrders = async () => {
-    try {
-      const response = await fetchAllDeliverys();
-      setDeliverys(response);
-      return response;
-    } catch {
-      toast.error("Erro ao buscar pedidos de delivery");
-      return [];
+  const parseMoney = (value: string) => {
+    if (!value) return undefined;
+    const cleaned = value.replace(",", ".").replace(/[^\d.]/g, "");
+    const num = Number(cleaned);
+    return Number.isFinite(num) ? num : undefined;
+  };
+
+  const applySortToQuery = (key: SortKey, prev: DeliveryQuery): DeliveryQuery => {
+    switch (key) {
+      case "NEWEST":
+        return { ...prev, direction: "desc", directionParam: "createdAt", page: 0 };
+      case "OLDEST":
+        return { ...prev, direction: "asc", directionParam: "createdAt", page: 0 };
+      case "TOTAL_DESC":
+        return { ...prev, direction: "desc", directionParam: "total", page: 0 };
+      case "TOTAL_ASC":
+        return { ...prev, direction: "asc", directionParam: "total", page: 0 };
+      default:
+        return prev;
     }
   };
 
+  // ✅ fetch server-side (mantido)
+  const fetchDeliveryOrders = async () => {
+    try {
+      setLoading(true);
+
+      const response = (await fetchAllDeliverys(formPagination)) as PageResponse<OrderDeliveryResponse>;
+
+      setDeliverys(response.content ?? []);
+      setPageInfo({
+        totalPages: response.totalPages ?? 0,
+        totalElements: response.totalElements ?? 0,
+        page: response.number ?? formPagination.page,
+        size: response.size ?? formPagination.size,
+      });
+
+      return response.content ?? [];
+    } catch {
+      toast.error("Erro ao buscar pedidos de delivery");
+      setDeliverys([]);
+      setPageInfo({ totalPages: 0, totalElements: 0, page: 0, size: formPagination.size });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ carrega dados estáticos
   useEffect(() => {
     const loadStaticData = async () => {
       try {
-        const [categoriesData, flavorsData, deliveryOrdersData] = await Promise.all([
-          fetchCategories(),
-          fetchFlavores(),
-          fetchAllDeliverys(),
-        ]);
-
+        const [categoriesData, flavorsData] = await Promise.all([fetchCategories(), fetchFlavores()]);
         setCategories(categoriesData);
         setFlavors(flavorsData);
-        setDeliverys(deliveryOrdersData);
       } catch (err) {
         console.error("Erro ao buscar dados estáticos", err);
         toast.error("Erro ao carregar dados do delivery");
@@ -99,7 +160,13 @@ export default function DeliveryManager() {
     loadStaticData();
   }, []);
 
-  // ✅ quando o usuário troca a aba, se o pedido selecionado não estiver nela, limpa o detalhe
+  // ✅ sempre que a query (formPagination) mudar -> refetch
+  useEffect(() => {
+    fetchDeliveryOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formPagination]);
+
+  // ✅ quando troca a aba, se o pedido selecionado não estiver nela, limpa detalhe
   useEffect(() => {
     if (!selectedOrder) return;
     if (selectedOrder.status !== deliveryState) setSelectedOrderId(null);
@@ -131,16 +198,11 @@ export default function DeliveryManager() {
 
   function getProductNameFromNotes(notes: string, size?: string) {
     if (!notes) return "";
-
-    // 1) remove sabores/complementos
     let base = notes.split("(")[0].split("+")[0].trim();
-
-    // 2) remove o tamanho no final (se você já tem ele fora)
     if (size) {
       const escapedSize = size.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       base = base.replace(new RegExp(`\\s*${escapedSize}\\s*$`, "i"), "").trim();
     }
-
     return base;
   }
 
@@ -193,6 +255,7 @@ export default function DeliveryManager() {
     }
   };
 
+  // ✅ stats (página atual)
   const deliveryOrdersToday = useMemo(() => {
     const now = new Date();
     return deliverys.filter((order) => {
@@ -222,22 +285,10 @@ export default function DeliveryManager() {
     return `há ${totalSeconds}s`;
   };
 
-  const delivery_pending = useMemo(
-    () => deliverys.filter((order) => order.status === OrderStatus.PENDING),
-    [deliverys],
-  );
-  const delivery_preparing = useMemo(
-    () => deliverys.filter((order) => order.status === OrderStatus.PREPARING),
-    [deliverys],
-  );
-  const delivery_on_route = useMemo(
-    () => deliverys.filter((order) => order.status === OrderStatus.ON_ROUTE),
-    [deliverys],
-  );
-  const delivery_finish = useMemo(
-    () => deliverys.filter((order) => order.status === OrderStatus.PAYED),
-    [deliverys],
-  );
+  const delivery_pending = useMemo(() => deliverys.filter((order) => order.status === OrderStatus.PENDING), [deliverys]);
+  const delivery_preparing = useMemo(() => deliverys.filter((order) => order.status === OrderStatus.PREPARING), [deliverys]);
+  const delivery_on_route = useMemo(() => deliverys.filter((order) => order.status === OrderStatus.ON_ROUTE), [deliverys]);
+  const delivery_finish = useMemo(() => deliverys.filter((order) => order.status === OrderStatus.PAYED), [deliverys]);
 
   const paymentsLabel = (order: OrderDeliveryResponse) => {
     if (order.payments.length === 0) return `Não informado`;
@@ -263,105 +314,15 @@ export default function DeliveryManager() {
 
   // ============================
   // ✅ FILTER + SORT
+  // ✅ Ordenação segue server-side (mantida)
+  // ✅ Filtros agora são LOCAIS (na página atual)
   // ============================
+
   const paymentMethods = useMemo(() => {
     const set = new Set<string>();
     deliverys.forEach((o) => o.payments?.forEach((p) => p.method && set.add(String(p.method))));
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [deliverys]);
-
-  const isToday = (createdAt: string) => {
-    const d = new Date(createdAt);
-    if (Number.isNaN(d.getTime())) return false;
-    const now = new Date();
-    return (
-      d.getFullYear() === now.getFullYear() &&
-      d.getMonth() === now.getMonth() &&
-      d.getDate() === now.getDate()
-    );
-  };
-
-  const normalize = (v: unknown) => String(v ?? "").toLowerCase().trim();
-
-  const matchesQuery = (order: OrderDeliveryResponse, q: string) => {
-    if (!q) return true;
-    const hay = [
-      order.id,
-      order.client?.name,
-      order.client?.phone,
-      order.client?.endereco?.street,
-      order.client?.endereco?.neighborhood,
-      order.client?.endereco?.city,
-      order.client?.endereco?.reference,
-      ...(order.items?.map((i) => i.notes) ?? []),
-    ]
-      .map(normalize)
-      .join(" | ");
-
-    return hay.includes(normalize(q));
-  };
-
-  const hasPaymentMethod = (order: OrderDeliveryResponse, method: string) => {
-    if (method === "ALL") return true;
-    const methods = (order.payments ?? []).map((p) => String(p.method ?? "")).filter(Boolean);
-    return methods.includes(method);
-  };
-
-  const parseMoney = (value: string) => {
-    if (!value) return null;
-    const cleaned = value.replace(",", ".").replace(/[^\d.]/g, "");
-    const num = Number(cleaned);
-    return Number.isFinite(num) ? num : null;
-  };
-
-  const minTotal = useMemo(() => parseMoney(filterMinTotal), [filterMinTotal]);
-  const maxTotal = useMemo(() => parseMoney(filterMaxTotal), [filterMaxTotal]);
-
-  const filteredAndSortedOrders = useMemo(() => {
-    const base = deliverys.filter((o) => o.status === deliveryState);
-
-    const filtered = base.filter((o) => {
-      if (filterTodayOnly && !isToday(o.createdAt)) return false;
-      if (!matchesQuery(o, filterQuery)) return false;
-      if (!hasPaymentMethod(o, filterPaymentMethod)) return false;
-
-      const total = Number(o.total ?? 0);
-      if (minTotal !== null && total < minTotal) return false;
-      if (maxTotal !== null && total > maxTotal) return false;
-
-      return true;
-    });
-
-    const sorted = [...filtered].sort((a, b) => {
-      const aDate = new Date(a.createdAt).getTime();
-      const bDate = new Date(b.createdAt).getTime();
-      const aTotal = Number(a.total ?? 0);
-      const bTotal = Number(b.total ?? 0);
-
-      switch (sortKey) {
-        case "OLDEST":
-          return aDate - bDate;
-        case "TOTAL_DESC":
-          return bTotal - aTotal;
-        case "TOTAL_ASC":
-          return aTotal - bTotal;
-        case "NEWEST":
-        default:
-          return bDate - aDate;
-      }
-    });
-
-    return sorted;
-  }, [
-    deliverys,
-    deliveryState,
-    filterTodayOnly,
-    filterQuery,
-    filterPaymentMethod,
-    minTotal,
-    maxTotal,
-    sortKey,
-  ]);
 
   const activeFilterCount = useMemo(() => {
     let c = 0;
@@ -379,8 +340,88 @@ export default function DeliveryManager() {
     setFilterPaymentMethod("ALL");
     setFilterMinTotal("");
     setFilterMaxTotal("");
-    setSortKey("NEWEST");
+    // ✅ não mexe em paginação nem ordenação
   };
+
+  const applyFilters = () => {
+    // ✅ filtros são locais, então só fecha o drawer
+    // ✅ ordenação permanece como está (você ainda pode trocar sortKey e aplicar ordenação server-side abaixo se quiser)
+    setIsFilterOpen(false);
+
+    // ✅ Se você quiser manter o "Aplicar" também aplicando SOMENTE a ordenação (server-side),
+    // sem mexer em filtros no backend:
+    setFormPagination((prev) => applySortToQuery(sortKey, prev));
+  };
+
+  // ✅ paginação UI (mantida)
+  const canPrev = pageInfo.page > 0;
+  const canNext = pageInfo.page + 1 < pageInfo.totalPages;
+
+  const prevPage = () => setFormPagination((p) => ({ ...p, page: Math.max(0, (p.page ?? 0) - 1) }));
+  const nextPage = () => setFormPagination((p) => ({ ...p, page: (p.page ?? 0) + 1 }));
+
+  // ✅ FILTRO LOCAL (aplicado na lista da página atual)
+  const ordersToRender = useMemo(() => {
+    const q = filterQuery.trim().toLowerCase();
+    const min = parseMoney(filterMinTotal);
+    const max = parseMoney(filterMaxTotal);
+
+    const isToday = (createdAt: string) => {
+      const created = new Date(createdAt);
+      const now = new Date();
+      const diffMs = now.getTime() - created.getTime();
+      if (Number.isNaN(created.getTime()) || diffMs < 0) return false;
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      return days < 1;
+    };
+
+    const textIncludes = (value?: string) => (value ?? "").toLowerCase().includes(q);
+
+    return deliverys
+      .filter((o) => o.status === deliveryState)
+      .filter((o) => {
+        // ✅ somente hoje
+        if (filterTodayOnly && !isToday(o.createdAt)) return false;
+
+        // ✅ pagamento
+        if (filterPaymentMethod !== "ALL") {
+          const has = (o.payments ?? []).some((p) => String(p.method) === String(filterPaymentMethod));
+          if (!has) return false;
+        }
+
+        // ✅ total min/max
+        const total = Number(o.total ?? 0);
+        if (typeof min === "number" && total < min) return false;
+        if (typeof max === "number" && total > max) return false;
+
+        // ✅ busca textual
+        if (!q) return true;
+
+        const client = o.client;
+        const endereco = client?.endereco;
+
+        const inClient =
+          textIncludes(client?.name) ||
+          textIncludes(client?.phone) ||
+          textIncludes(endereco?.street) ||
+          textIncludes(endereco?.neighborhood) ||
+          textIncludes(endereco?.city) ||
+          textIncludes(endereco?.reference) ||
+          textIncludes(String(endereco?.number ?? ""));
+
+        const inItems = (o.items ?? []).some((it) => textIncludes(it.notes) || textIncludes(it.productVariation?.size));
+
+        return inClient || inItems || textIncludes(String(o.id));
+      });
+  }, [
+    deliverys,
+    deliveryState,
+    filterQuery,
+    filterTodayOnly,
+    filterPaymentMethod,
+    filterMinTotal,
+    filterMaxTotal,
+  ]);
 
   return (
     <div className="dm-main-wrapper">
@@ -392,11 +433,7 @@ export default function DeliveryManager() {
           <div className="dd-sidebar-header">
             <div className="dd-sidebar-titlewrap">
               <span className="dd-sidebar-eyebrow">Delivery</span>
-              {selectedOrder ? (
-                <h2 className="dd-sidebar-title">Detalhe do pedido</h2>
-              ) : (
-                <h2 className="dd-sidebar-title">Controle do Delivery</h2>
-              )}
+              {selectedOrder ? <h2 className="dd-sidebar-title">Detalhe do pedido</h2> : <h2 className="dd-sidebar-title">Controle do Delivery</h2>}
 
               {selectedOrder ? (
                 <span
@@ -447,19 +484,23 @@ export default function DeliveryManager() {
               <div style={{ marginTop: 14, textAlign: "left" }}>
                 <div className="dm-stats-summary" style={{ borderTop: "none", paddingTop: 0 }}>
                   <p className="dm-stat-line">
-                    Pedidos Hoje: <span className="dm-stat-bold">{deliveryOrdersToday.length}</span>
+                    Pedidos Hoje (página): <span className="dm-stat-bold">{deliveryOrdersToday.length}</span>
                   </p>
                   <p className="dm-stat-line">
-                    Aguardando: <span className="dm-stat-warning">{delivery_pending.length}</span>
+                    Aguardando (página): <span className="dm-stat-warning">{delivery_pending.length}</span>
                   </p>
                   <p className="dm-stat-line">
-                    Preparando: <span className="dm-stat-preparing">{delivery_preparing.length}</span>
+                    Preparando (página): <span className="dm-stat-preparing">{delivery_preparing.length}</span>
                   </p>
                   <p className="dm-stat-line">
-                    Em Rota: <span className="dm-stat-in_rounter">{delivery_on_route.length}</span>
+                    Em Rota (página): <span className="dm-stat-in_rounter">{delivery_on_route.length}</span>
                   </p>
                   <p className="dm-stat-line">
-                    Concluídos: <span className="dm-stat-info">{delivery_finish.length}</span>
+                    Concluídos (página): <span className="dm-stat-info">{delivery_finish.length}</span>
+                  </p>
+
+                  <p className="dm-stat-line" style={{ marginTop: 10, opacity: 0.8 }}>
+                    Página {pageInfo.page + 1} de {Math.max(1, pageInfo.totalPages)} • {pageInfo.totalElements} pedidos
                   </p>
                 </div>
               </div>
@@ -497,18 +538,10 @@ export default function DeliveryManager() {
                   </div>
 
                   <div className="dd-actions-inline">
-                    <button
-                      className="dd-btn dd-btn-ghost"
-                      type="button"
-                      onClick={() => copyToClipboard(selectedOrder.client?.phone)}
-                    >
+                    <button className="dd-btn dd-btn-ghost" type="button" onClick={() => copyToClipboard(selectedOrder.client?.phone)}>
                       Copiar telefone
                     </button>
-                    <button
-                      className="dd-btn dd-btn-ghost"
-                      type="button"
-                      onClick={() => openWhatsApp(selectedOrder.client?.phone)}
-                    >
+                    <button className="dd-btn dd-btn-ghost" type="button" onClick={() => openWhatsApp(selectedOrder.client?.phone)}>
                       WhatsApp
                     </button>
                   </div>
@@ -521,8 +554,7 @@ export default function DeliveryManager() {
                   <div className="dd-row">
                     <span className="dd-label">Rua</span>
                     <span className="dd-value">
-                      {selectedOrder.client?.endereco?.street ?? "N/A"},{" "}
-                      {selectedOrder.client?.endereco?.number ?? "s/n"}
+                      {selectedOrder.client?.endereco?.street ?? "N/A"}, {selectedOrder.client?.endereco?.number ?? "s/n"}
                     </span>
                   </div>
                   <div className="dd-row">
@@ -583,9 +615,7 @@ export default function DeliveryManager() {
                   </div>
                   <div className="dd-row">
                     <span className="dd-label">Frete</span>
-                    <span className="dd-value">
-                      R$ {Number((selectedOrder.total ?? 0) - (selectedOrder.subtotal ?? 0)).toFixed(2)}
-                    </span>
+                    <span className="dd-value">R$ {Number((selectedOrder.total ?? 0) - (selectedOrder.subtotal ?? 0)).toFixed(2)}</span>
                   </div>
                   <div className="dd-row dd-row-strong">
                     <span className="dd-label">Total</span>
@@ -597,11 +627,7 @@ export default function DeliveryManager() {
               <div className="dd-footer">
                 {selectedOrder.status === OrderStatus.PENDING && (
                   <>
-                    <button
-                      className="dd-btn dd-btn-secondary"
-                      type="button"
-                      onClick={() => handleUpdateStatus(OrderStatus.PREPARING, selectedOrder.id)}
-                    >
+                    <button className="dd-btn dd-btn-secondary" type="button" onClick={() => handleUpdateStatus(OrderStatus.PREPARING, selectedOrder.id)}>
                       Aceitar
                     </button>
                     <button className="dd-btn dd-btn-ghost" type="button" onClick={handleCloseOrderDetail}>
@@ -612,11 +638,7 @@ export default function DeliveryManager() {
 
                 {selectedOrder.status === OrderStatus.PREPARING && (
                   <>
-                    <button
-                      className="dd-btn dd-btn-secondary"
-                      type="button"
-                      onClick={() => handleUpdateStatus(OrderStatus.ON_ROUTE, selectedOrder.id)}
-                    >
+                    <button className="dd-btn dd-btn-secondary" type="button" onClick={() => handleUpdateStatus(OrderStatus.ON_ROUTE, selectedOrder.id)}>
                       Despachar
                     </button>
                     <button className="dd-btn dd-btn-ghost" type="button" onClick={handleCloseOrderDetail}>
@@ -627,11 +649,7 @@ export default function DeliveryManager() {
 
                 {selectedOrder.status === OrderStatus.ON_ROUTE && (
                   <>
-                    <button
-                      className="dd-btn dd-btn-secondary"
-                      type="button"
-                      onClick={() => handleUpdateStatus(OrderStatus.PAYED, selectedOrder.id)}
-                    >
+                    <button className="dd-btn dd-btn-secondary" type="button" onClick={() => handleUpdateStatus(OrderStatus.PAYED, selectedOrder.id)}>
                       Finalizar
                     </button>
                     <button className="dd-btn dd-btn-ghost" type="button" onClick={handleCloseOrderDetail}>
@@ -670,7 +688,16 @@ export default function DeliveryManager() {
               <div
                 key={tab.status}
                 className={`dm-tab-item ${deliveryState === tab.status ? "dm-active" : ""}`}
-                onClick={() => setDeliveryState(tab.status)}
+                onClick={() => {
+                  setSelectedOrderId(null);
+                  setDeliveryState(tab.status);
+
+                  setFormPagination((prev) => ({
+                    ...prev,
+                    status: tab.status,
+                    page: 0,
+                  }));
+                }}
                 role="button"
                 tabIndex={0}
               >
@@ -693,21 +720,13 @@ export default function DeliveryManager() {
             </button>
 
             {/* ✅ Drawer sempre montado (para animar abrir/fechar) */}
-            <div
-              className={`dm-filter-backdrop ${isFilterOpen ? "open" : ""}`}
-              onClick={() => setIsFilterOpen(false)}
-            />
-  
-            <div
-              className={`dm-filter-drawer ${isFilterOpen ? "open" : ""}`}
-              role="dialog"
-              aria-label="Filtros"
-              aria-hidden={!isFilterOpen}
-            >
+            <div className={`dm-filter-backdrop ${isFilterOpen ? "open" : ""}`} onClick={() => setIsFilterOpen(false)} />
+
+            <div className={`dm-filter-drawer ${isFilterOpen ? "open" : ""}`} role="dialog" aria-label="Filtros" aria-hidden={!isFilterOpen}>
               <div className="dm-filter-drawer-header">
                 <div>
                   <h3>Filtros</h3>
-                  <p>Refina os pedidos desta aba</p>
+                  <p>Refina os pedidos desta aba (local)</p>
                 </div>
                 <button className="dm-filter-close" type="button" onClick={() => setIsFilterOpen(false)}>
                   <FiX />
@@ -717,11 +736,7 @@ export default function DeliveryManager() {
               <div className="dm-filter-grid">
                 <div className="dm-filter-field">
                   <label>Buscar</label>
-                  <input
-                    value={filterQuery}
-                    onChange={(e) => setFilterQuery(e.target.value)}
-                    placeholder="Nome, telefone, rua, itens..."
-                  />
+                  <input value={filterQuery} onChange={(e) => setFilterQuery(e.target.value)} placeholder="Nome, telefone, rua, itens..." />
                 </div>
 
                 <div className="dm-filter-field">
@@ -738,31 +753,17 @@ export default function DeliveryManager() {
 
                 <div className="dm-filter-field">
                   <label>Total mínimo</label>
-                  <input
-                    value={filterMinTotal}
-                    onChange={(e) => setFilterMinTotal(e.target.value)}
-                    placeholder="Ex: 25.00"
-                    inputMode="decimal"
-                  />
+                  <input value={filterMinTotal} onChange={(e) => setFilterMinTotal(e.target.value)} placeholder="Ex: 25.00" inputMode="decimal" />
                 </div>
 
                 <div className="dm-filter-field">
                   <label>Total máximo</label>
-                  <input
-                    value={filterMaxTotal}
-                    onChange={(e) => setFilterMaxTotal(e.target.value)}
-                    placeholder="Ex: 120.00"
-                    inputMode="decimal"
-                  />
+                  <input value={filterMaxTotal} onChange={(e) => setFilterMaxTotal(e.target.value)} placeholder="Ex: 120.00" inputMode="decimal" />
                 </div>
 
                 <div className="dm-filter-field dm-filter-inline">
                   <label className="dm-check">
-                    <input
-                      type="checkbox"
-                      checked={filterTodayOnly}
-                      onChange={(e) => setFilterTodayOnly(e.target.checked)}
-                    />
+                    <input type="checkbox" checked={filterTodayOnly} onChange={(e) => setFilterTodayOnly(e.target.checked)} />
                     <span>Somente hoje</span>
                   </label>
                 </div>
@@ -782,19 +783,18 @@ export default function DeliveryManager() {
                 <button className="dm-filter-secondary" type="button" onClick={clearFilters}>
                   Limpar
                 </button>
-                <button className="dm-filter-primary" type="button" onClick={() => setIsFilterOpen(false)}>
+                <button className="dm-filter-primary" type="button" onClick={applyFilters}>
                   Aplicar
                 </button>
               </div>
             </div>
 
             {/* ✅ Cards */}
-            {filteredAndSortedOrders.length === 0 ? (
+            {!loading && ordersToRender.length === 0 ? (
               <div className="dm-empty-state">
                 <h3 className="dm-empty-title">Nenhum pedido por aqui 😶</h3>
                 <p className="dm-empty-subtitle">
-                  Não existem pedidos na sessão{" "}
-                  <strong>{tabs.find((t) => t.status === deliveryState)?.label}</strong>
+                  Não existem pedidos na sessão <strong>{tabs.find((t) => t.status === deliveryState)?.label}</strong>
                   {activeFilterCount > 0 ? " com os filtros atuais." : "."}
                 </p>
 
@@ -804,14 +804,14 @@ export default function DeliveryManager() {
                   </button>
 
                   {activeFilterCount > 0 && (
-                    <button className="dm-btn-secondary" onClick={clearFilters} type="button">
+                    <button className="dm-filter-secondary" onClick={clearFilters} type="button">
                       Limpar filtros
                     </button>
                   )}
                 </div>
               </div>
             ) : (
-              filteredAndSortedOrders.map((order) => (
+              ordersToRender.map((order) => (
                 <div
                   key={order.id}
                   className={`dm-order-card dm-status-${order.status}`}
@@ -831,13 +831,10 @@ export default function DeliveryManager() {
                   <h3 className="dm-customer-name">{order.client?.name ?? "Sem nome"}</h3>
 
                   <p className="dm-customer-address">
-                    {order.client?.endereco?.street ? order.client.endereco.street : "N/A"},{" "}
-                    {order.client?.endereco?.number ?? "s/n"}
+                    {order.client?.endereco?.street ? order.client.endereco.street : "N/A"}, {order.client?.endereco?.number ?? "s/n"}
                   </p>
 
-                  <div className="dm-items-pill-container">
-                    {order.items?.length ? order.items.map((i) => i.notes).join(", ") : "Sem itens"}
-                  </div>
+                  <div className="dm-items-pill-container">{order.items?.length ? order.items.map((i) => i.notes).join(", ") : "Sem itens"}</div>
 
                   <div className="dm-card-footer">
                     <span className="dm-order-total">R$ {Number(order.total ?? 0).toFixed(2)}</span>
@@ -892,6 +889,25 @@ export default function DeliveryManager() {
                 </div>
               ))
             )}
+            <div
+              className={`btn-pagination open`}
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: 12,
+              }}
+            >
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="dm-filter-secondary" type="button" onClick={prevPage} disabled={!canPrev || loading}>
+                  Anterior
+                </button>
+                <button className="dm-filter-primary" type="button" onClick={nextPage} disabled={!canNext || loading}>
+                  Próxima
+                </button>
+              </div>
+            </div>{" "}
           </div>
         </main>
 

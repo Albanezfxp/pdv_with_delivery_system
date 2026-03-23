@@ -10,6 +10,8 @@ import com.pizzaria_system.repository.ClienteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,11 +26,10 @@ public class ClienteService {
     @Autowired
     private ClienteRepository repository;
 
-    public List<ClienteDto> findAll() {
+    public Page<Cliente> findAll(Pageable pageable) {
         logger.info("Finding all clientes");
-        var clientes = ObjectMapper.parseListObject(repository.findAll(), ClienteDto.class);
-        clientes.forEach(this::addHateoasLinks);
-        return clientes;
+        var clients = repository.findAll(pageable);
+        return  clients;
     }
 
     public ClienteDto findById(Long id) {
@@ -80,7 +81,7 @@ public class ClienteService {
 
     private void addHateoasLinks(ClienteDto dto) {
         dto.add(linkTo(methodOn(ClienteController.class).findById(dto.getId())).withSelfRel().withType("GET"));
-        dto.add(linkTo(methodOn(ClienteController.class).findAll()).withRel("findAll").withType("GET"));
+        dto.add(linkTo(methodOn(ClienteController.class).findAll(0, 10, "asc", "name")).withRel("findAll").withType("GET"));
         dto.add(linkTo(methodOn(ClienteController.class).create(dto)).withRel("create").withType("POST"));
         dto.add(linkTo(methodOn(ClienteController.class).update(dto.getId(), dto)).withRel("update").withType("PUT"));
         dto.add(linkTo(methodOn(ClienteController.class).delete(dto.getId())).withRel("delete").withType("DELETE"));

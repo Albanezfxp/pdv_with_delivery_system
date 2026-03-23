@@ -4,6 +4,9 @@ import { Product, ProductInterface } from "./types/interfaces/product.interface"
 import { categoryAdd } from "./types/interfaces/category.interface";
 import { OrderDeliveryRequest } from "./types/interfaces/orderDeliveryRequest.interface";
 import { OrderStatus } from "./types/enums/orderStatus.enum";
+import { DeliveryQuery, PageResponse } from "./types/interfaces/DeliveryQuery.interface";
+import { OrderDeliveryResponse } from "./types/interfaces/Delivery.interface";
+import { ClientQuery } from "./types/ClienteQuery.type";
 
 const api = axios.create({
 baseURL: "http://localhost:8080", // <-- Use a URL base fixada aqui
@@ -44,7 +47,7 @@ export const fetchOrderItemsExternal = async (
 
 export const fetchCategories = async () => {
   const response = await api.get("/categories")
-  return response.data
+  return response.data 
 }
 
 export const fetchNewCategory = async (payload: categoryAdd) => {
@@ -88,10 +91,24 @@ export const fetchAddDelivery = async (order: OrderDeliveryRequest) => {
 }
 
 //OBS: DEVO PASSAR NO PARAMETRO O PAGE EO SIZE E BUSCAR  O CONTENT, PARA RETORNAR APENAS O ARRAY
-export const fetchAllDeliverys = async (page = 0, size = 12) => {
-  const res = await api.get("/order/orders-delivery", { params: { page, size } });
-  return res.data.content; 
-};
+export async function fetchAllDeliverys(query: DeliveryQuery): Promise<PageResponse<OrderDeliveryResponse>> {
+  const params: Record<string, string | number | boolean> = {
+    page: query.page,
+    size: query.size,
+    direction: query.direction,
+    directionParam: query.directionParam,
+    status: query.status,
+  };
+
+  if (query.q?.trim()) params.q = query.q.trim();
+  if (query.todayOnly) params.todayOnly = true;
+  if (query.paymentMethod && query.paymentMethod !== "ALL") params.paymentMethod = query.paymentMethod;
+  if (typeof query.minTotal === "number") params.minTotal = query.minTotal;
+  if (typeof query.maxTotal === "number") params.maxTotal = query.maxTotal;
+
+  const { data } = await api.get<PageResponse<OrderDeliveryResponse>>("/order/orders-delivery", { params });
+  return data;
+}
 
 export const fetchUpdateStatusOrderDelivery = async (status: OrderStatus, id: string ) => {
   const realId = parseFloat(id);
@@ -142,11 +159,18 @@ export const fetchAllPaymentOrders = async () => {
   const response = await api.get("/order/payments")
   return response.data
 }
+export const fetchAllClients = async (
+  query: ClientQuery
+): Promise<PageResponse<any>> => {
+  const { data } = await api.get("/clientes", {
+    params: {
+      page: query.page,
+      size: query.size,
+    },
+  });
 
-export const fetchAllClients = async () => {
-  const response = await api.get("/clientes")
-  return response.data
-}
+  return data;
+};
 
 export const fetchAllProducts = async () => {
   const response = await api.get("/products")
@@ -179,10 +203,20 @@ export const fetchCreateVariation = async (variation: any, productId: number) =>
 }
 
 export const fetchDeleteProduct = async (id: number) => {
-  const response = await api.delete(`/products/${id}`)
+  try {
+    const response = await api.patch(`/products/disabled-product/${id}`)
   return  response.data;
+    } catch (err) {
+  if (axios.isAxiosError(err)) {
+    console.log("STATUS:", err.response?.status);
+    console.log("DATA:", err.response?.data);
+    console.log("URL:", err.config?.url);
+    console.log("METHOD:", err.config?.method);
+  } else {
+    console.log("ERRO:", err);
+  }
 }
-
+}
 export const fetchDeleteVariation = async (id: number) => {
   const response = await api.delete(`/product_variation/${id}`)
   return response.data;
